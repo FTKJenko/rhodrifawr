@@ -80,11 +80,37 @@
     .footer{margin-top:18px;color:rgba(223,246,255,0.6);font-size:13px}
 
     /* responsive */
-    @media (max-width:900px){
-      .card{grid-template-columns:1fr;}
-      .panel{order:-1}
-    }
-
+    @media (max-width: 900px) {
+  .card {
+    grid-template-columns: 1fr;
+    padding: 24px;
+  }
+  .hero {
+    padding: 12px 0;
+  }
+  h1 {
+    font-size: clamp(24px, 8vw, 40px);
+  }
+  p.lead {
+    font-size: 1rem;
+  }
+  .cta {
+    flex-direction: column;
+  }
+  .btn {
+    width: 100%;
+    padding: 16px 0;
+    font-size: 1.1rem;
+  }
+  .panel {
+    order: -1;
+    margin-bottom: 20px;
+  }
+  /* Hide or reduce matrix animation on small devices */
+  canvas#matrix {
+    opacity: 0.3;
+  }
+}
     /* falling matrix canvas sits behind content */
     canvas#matrix{position:fixed;inset:0;z-index:1;opacity:0.55;pointer-events:none}
 
@@ -252,7 +278,6 @@
   </script>
 </body>
 </html>
-
 
 
 
