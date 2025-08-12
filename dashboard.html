@@ -32,6 +32,75 @@
 	  to{transform:translateX(-120px) translateY(-60px);}
 	}
 
+    .dashboard-widgets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 32px;
+  z-index: 10;
+  position: relative;
+}
+.widget {
+  background: rgba(10,40,60,0.85);
+  border: 1.5px solid #00f6ff;
+  border-radius: 12px;
+  box-shadow: 0 0 12px #00f6ff44;
+  padding: 18px 22px;
+  min-width: 180px;
+  max-width: 220px;
+  color: #dff6ff;
+  font-family: 'Orbitron', 'Inter', monospace;
+  text-align: center;
+  position: relative;
+}
+.widget.ip #cyber-ip {
+  font-size: 1.2em;
+  color: #00ff99;
+  margin-top: 6px;
+  letter-spacing: 1px;
+  word-break: break-all;
+}
+.widget h2 {
+  font-size: 1.1em;
+  margin: 0 0 8px 0;
+  color: #00f6ff;
+  letter-spacing: 1px;
+}
+.status-indicator {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  margin-bottom: 6px;
+  background: #00ff99;
+  box-shadow: 0 0 8px #00ff99cc;
+}
+.status-indicator.online { background: #00ff99; }
+.status-indicator.offline { background: #ff0033; box-shadow: 0 0 8px #ff0033cc; }
+.threat-level {
+  font-weight: bold;
+  font-size: 1.2em;
+  padding: 4px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-top: 4px;
+  background: #ff0033;
+  color: #fff;
+  box-shadow: 0 0 8px #ff003388;
+  letter-spacing: 2px;
+}
+.threat-level.low { background: #00ff99; color: #041026; }
+.threat-level.medium { background: #ffae00; color: #041026; }
+.threat-level.high { background: #ff0033; color: #fff; }
+#cyber-clock {
+  font-size: 1.4em;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 2px;
+  color: #00f6ff;
+  text-shadow: 0 0 8px #00f6ff88;
+  margin-top: 4px;
+}
+
 	/* falling matrix canvas sits behind content */
 	canvas#matrix{
 	  position:fixed;
@@ -70,10 +139,65 @@
 <canvas id="matrix" aria-hidden="true"></canvas>
 <div class="scanlines" aria-hidden="true"></div>
 
+<div class="dashboard-widgets">
+  <div class="widget status">
+    <h2>System Status</h2>
+    <div class="status-indicator online"></div>
+    <span>All systems operational</span>
+  </div>
+  <div class="widget ip">
+  <h2>Your IP Address</h2>
+  <div id="cyber-ip">Loading...</div>
+</div>
+  <div class="widget clock">
+    <h2>Live Clock</h2>
+    <div id="cyber-clock">--:--:--</div>
+  </div>
+  <div class="widget threat">
+    <h2>Threat Level</h2>
+    <div class="threat-level high">HIGH</div>
+  </div>
+  <div class="widget fact">
+    <h2>Cyber Fact</h2>
+    <div id="cyber-fact">The first computer virus was created in 1971 and was called the Creeper virus.</div>
+  </div>
+</div>
+
   <h1>Welcome to the Dashboard</h1>
   <p>look at all this stuff!</p>
   <a href="index.html" style="color: #00f6ff;">Back to Home</a>
   <script>
+
+// Live cyber clock
+function updateCyberClock() {
+  const now = new Date();
+  const pad = n => n.toString().padStart(2, '0');
+  document.getElementById('cyber-clock').textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+setInterval(updateCyberClock, 1000);
+updateCyberClock();
+
+// Random cyber fact (can expand this list)
+const facts = [
+  "The first computer virus was created in 1971 and was called the Creeper virus.",
+  "The term 'hacker' originally meant someone who made furniture with an axe.",
+  "The most common password in 2024 is still '123456'.",
+  "Phishing attacks account for more than 80% of reported security incidents.",
+  "The word 'cyber' comes from 'cybernetics', the study of control systems."
+];
+document.getElementById('cyber-fact').textContent = facts[Math.floor(Math.random()*facts.length)];
+
+// Fetch and display user's public IP address
+fetch('https://api.ipify.org?format=json')
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('cyber-ip').textContent = data.ip;
+  })
+  .catch(() => {
+    document.getElementById('cyber-ip').textContent = "Unavailable";
+  });
+
   const canvas = document.getElementById('matrix');
   const ctx = canvas.getContext('2d');
   let w = canvas.width = innerWidth;
@@ -118,4 +242,3 @@
 
 </body>
 </html>
-
