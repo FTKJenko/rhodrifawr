@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title></title>
+<style type="text/css">
+.ansi2html-content { display: inline; white-space: pre-wrap; word-wrap: break-word; }
+.body_foreground { color: #AAAAAA; }
+.body_background { background-color: #000000; }
+.inv_foreground { color: #000000; }
+.inv_background { background-color: #AAAAAA; }
+</style>
+</head>
+<body class="body_foreground body_background" style="font-size: normal;" >
+<pre class="ansi2html-content">
+%clrInteresting ports on 10.2.2.2:
+(The 1539 ports scanned but not shown below are in state: closed)
+          %und                                                                 %clr
+Port     [%bgblk%und %clr[%bgblk%und %clr]%und%bgblu                         %clr%bgwhi%bld%blk ALERT %clr%bgblu%und                          %clr[%bgblk%und  %clr]
+22/tcp   [%bgblk                                                                 %clr]
+         [%bgblk %clr%bgwhi%bld%blk E R R O R  :  E M E R G E N C Y   S Y S T E M   F A I L U R E %clr ]%clr
+No exact [%bgblk%und                                                                 %clr]
+
+Nmap run completed -- 1 IP address (1 host up) scanneds
+# sshnuke 10.2.2.2 -rootpw="Z1ON0101"
+Connecting to 10.2.2.2:ssh ... successful.
+Attempting to exploit SSHv1 CRC32 ... successful.
+Reseting root password to "Z1ON0101".
+System open: Access level &lt;9&gt;
+# ssh 10.2.2.2 -l root
+root@10.2.2.2's password:
+
+RRF-CONTROL &gt; disable grid nodes 21 - 48
+
+%bldWarning: Disabling nodes 21-48 will disconnect sector 11 (27 nodes)%clr
+
+         %bldARE YOU SURE? (y/n) y%clr
+
+</pre>
+</body>
+
+</html>
