@@ -48,7 +48,7 @@
     .wrap{position:relative;z-index:10;min-height:100vh;display:grid;place-items:center;padding:48px}
     .card{
       width:min(1100px,94%);
-      border-radius:20px;padding:36px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);box-shadow:0 10px 40px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03);display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center
+      border-radius:20px;padding:36px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);box-shadow:0 10px 40px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03);gap:28px;align-items:center
     }
 
     .hero{padding:12px 18px}
@@ -61,15 +61,63 @@
 
     p.lead{margin-top:14px;color:var(--muted);font-size:1.05rem}
 
-    .cta{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
-    .btn{--pad:12px 18px;border-radius:12px;padding:var(--pad);font-weight:600;border:1px solid rgba(255,255,255,0.06);background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));cursor:pointer;transition:all .22s;backdrop-filter:blur(6px)}
-    .btn.primary{color:#001; background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 6px 28px rgba(138,43,226,0.12);border:none}
-    .btn.ghost{color:var(--accent);border:1px solid rgba(0,246,255,0.12);background:transparent}
-    .btn:hover{transform:translateY(-4px)}
+.cta {
+  margin-top: 22px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  --pad: 12px 18px;
+  border-radius: 12px;
+  padding: var(--pad);
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  cursor: pointer;
+  transition: all 0.22s;
+  backdrop-filter: blur(6px);
+  color: var(--accent); /* Default text color for non-primary buttons */
+}
+
+.btn.primary {
+  color: rgb(255, 255, 255); /* Bright white text for visibility */
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 6px 28px rgba(138, 43, 226, 0.12);
+  border: none;
+}
+
+.btn.ghost {
+  color: var(--accent);
+  border: 1px solid rgba(0, 246, 255, 0.12);
+  background: transparent;
+}
+
+.btn:hover {
+  transform: translateY(-4px);
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px #27c93f, 0 0 20px #27c93f;
+  }
+  50% {
+    box-shadow: 0 0 14px #0f0, 0 0 28px #0f0;
+  }
+}
+
+.btn.pulse {
+  animation: pulseGlow 2.5s infinite;
+  color: #00ff00 !important; /* bright green text */
+  background: black !important;
+  border-color: #0f0 !important;
+}
+
 
     /* right column - terminal */
     .panel{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.02)}
-    .term{font-family:monospace;font-size:13px;line-height:1.65;color:#bff7ff;min-height:180px}
+    .term{font-family:monospace;font-size:13px;line-height:1.4;color:#bff7ff;white-space:pre;overflow-x:auto;overflow-y:visible;}
     .term .line{white-space:pre-wrap}
     .meta{display:flex;align-items:center;gap:10px;margin-bottom:10px}
     .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(180deg,#ff5f56,#ff5f56)}
@@ -81,10 +129,24 @@
 
     /* responsive */
     @media (max-width: 900px) {
-  .card {
-    grid-template-columns: 1fr;
-    padding: 24px;
-  }
+	
+	.card {
+	  display: flex;
+	  flex-direction: column; /* stack children vertically */
+	  gap: 28px;
+	  align-items: stretch;
+	  width: min(1100px, 94%);
+	  border-radius: 20px;
+	  padding: 36px;
+	  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+	  backdrop-filter: blur(8px);
+	  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+	  border: 1px solid rgba(255,255,255,0.03);
+	}
+
+
+
+
   .hero {
     padding: 12px 0;
   }
@@ -94,6 +156,30 @@
   p.lead {
     font-size: 1rem;
   }
+  .term .line span {
+  white-space: pre-wrap;
+  display: inline;
+}
+.term .line {
+  display: inline-block;
+  text-align: left; 
+}
+.term {
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #bff7ff;
+  white-space: pre;
+  overflow-x: auto;
+  overflow-y: visible;
+  text-align: center; 
+}
+
+.term > .ascii-wrapper {
+  display: inline-block;
+  text-align: left; 
+}
+
   .cta {
     flex-direction: column;
   }
@@ -105,6 +191,15 @@
   .panel {
     order: -1;
     margin-bottom: 20px;
+    min-height: 250px; /* or whatever height you want */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 18px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.02);
   }
   /* Hide or reduce matrix animation on small devices */
   canvas#matrix {
@@ -125,31 +220,34 @@
 
   <main id="app" class="wrap">
     <section class="card" role="region" aria-label="Welcome card">
-      <div class="hero">
-        <h1><span class="glitch" data-text="Rhodri Fawr">Rhodri Fawr</span> <span style="color:var(--muted);font-weight:600">Welcome to my page</span></h1>
-        <p class="lead">A personal playground for experiments — projects, notes, demos and chaotic good ideas. This page is a minimal starting point with neon style, micro-interactions and a tiny terminal.</p>
+  <div class="hero">
+    <h1><span class="glitch" data-text="Rhodri Fawr">Rhodri Fawr</span> <span style="color:var(--muted);font-weight:600">Welcome to my page</span></h1>
+    <p class="lead">A personal playground for experiments — projects, notes, demos and chaotic good ideas.</p>
 
-        <div class="cta">
-          <button class="btn primary" id="enterBtn">Enter / Open Dashboard</button>
-          <button class="btn ghost" id="aboutBtn">About this project</button>
-          <a class="btn" href="#projects" role="button">Projects</a>
-        </div>
+    <div class="cta">
+      <button class="btn primary" id="enterBtn">Enter / Open Dashboard</button>
+      <button class="btn ghost" id="aboutBtn">About this project</button>
+      <a class="btn" href="#projects" role="button">Projects</a>
+    </div>
 
-        <div class="footer">Tip: press <kbd>Ctrl</kbd> + <kbd>K</kbd> to focus search (coming soon)</div>
-      </div>
+    <div class="footer">Tip: press <kbd>Ctrl</kbd> + <kbd>K</kbd> to focus search (coming soon)</div>
+  </div>
 
-      <aside class="panel" aria-label="Mini terminal">
-        <div class="meta"><div class="dot"></div><div class="dot yellow"></div><div class="dot green"></div></div>
-        <div class="term" id="term" role="log" aria-live="polite">
-          <div class="line">Initializing...</div>
-        </div>
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn" id="copyBtn" title="Copy welcome message">Copy</button>
-          <button class="btn" id="themeBtn" title="Toggle color pulse">Pulse</button>
-        </div>
-      </aside>
+  
+  <aside class="panel" aria-label="Mini terminal">
+    <div class="meta">
+      <div class="dot"></div><div class="dot yellow"></div><div class="dot green"></div>
+    </div>
+    <div class="term" id="term" role="log" aria-live="polite">
+      <div class="line">Initializing...</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" id="copyBtn" title="Copy welcome message">Regenerate</button>
+      <button class="btn" id="themeBtn" title="Toggle color pulse">Matrix</button>
+    </div>
+  </aside>
+</section>
 
-    </section>
   </main>
 
   <div class="cursor-ripple" id="ripple" style="display:none"></div>
@@ -176,51 +274,92 @@
     }
     addEventListener('resize', resize);
 
-    function drawMatrix(){
-      ctx.fillStyle = 'rgba(4,16,38,0.16)';
-      ctx.fillRect(0,0,w,h);
-      ctx.font = fontSize + 'px monospace';
-      for(let i=0;i<drops.length;i++){
-        const text = chars.charAt(Math.floor(Math.random()*chars.length));
-        const x = i*fontSize;
-        const y = drops[i]*fontSize;
-        ctx.fillStyle = 'rgba(0,246,255,0.9)';
-        ctx.fillText(text, x, y);
-        drops[i] = drops[i] > h/fontSize + Math.random()*100 ? 0 : drops[i] + 0.25 + Math.random()*0.5;
-      }
-      requestAnimationFrame(drawMatrix);
-    }
-    drawMatrix();
+/* ---------- Matrix canvas ---------- */
+let matrixColors = {
+  bgFade: 'rgba(4,16,38,0.16)',    // original background fade
+  text: 'rgba(0,246,255,0.9)'      // original cyan text
+};
 
-    /* ---------- Tiny terminal typing ---------- */
-    const term = document.getElementById('term');
-    const lines = [
-      'Boot sequence: OK',
-      'Network: offline',
-      'User: anonymous',
-      'Loading modules: [core] [gfx] [ai]',
-      'Welcome to your cyber lab. Be curious.'
-    ];
+let matrixColorsMatrixStyle = {
+  bgFade: 'rgba(0, 0, 0, 0.18)',   // dark black background fade
+  text: 'rgba(0,255,70,0.9)'       // greenish text
+};
 
-    function typeLines(i=0,t=0){
-      if(i>=lines.length) return;
-      const lineText = lines[i];
-      const lineEl = document.createElement('div');
-      lineEl.className='line';
-      term.appendChild(lineEl);
-      (function typeChar(idx){
-        if(idx>lineText.length){
-          term.appendChild(document.createElement('br'));
-          setTimeout(()=>typeLines(i+1,0),450);
-          term.scrollTop = term.scrollHeight;
-          return;
-        }
-        lineEl.textContent = lineText.slice(0,idx);
-        term.scrollTop = term.scrollHeight;
-        setTimeout(()=>typeChar(idx+1), 20 + Math.random()*40);
-      })(0);
+let useMatrixStyle = false; // toggle state
+
+function drawMatrix(){
+  ctx.fillStyle = useMatrixStyle ? matrixColorsMatrixStyle.bgFade : matrixColors.bgFade;
+  ctx.fillRect(0,0,w,h);
+  ctx.font = fontSize + 'px monospace';
+  for(let i=0;i<drops.length;i++){
+    const text = chars.charAt(Math.floor(Math.random()*chars.length));
+    const x = i*fontSize;
+    const y = drops[i]*fontSize;
+    ctx.fillStyle = useMatrixStyle ? matrixColorsMatrixStyle.text : matrixColors.text;
+    ctx.fillText(text, x, y);
+    drops[i] = drops[i] > h/fontSize + Math.random()*100 ? 0 : drops[i] + 0.25 + Math.random()*0.5;
+  }
+  requestAnimationFrame(drawMatrix);
+}
+
+drawMatrix();
+
+
+	function stripAnsiCodes(text) {
+	  return text.replace(/\x1b\[[0-9;]*m/g, '');
+	}
+
+  const logoFiles = [
+		'aperture-science-01.html',
+		'aperture-science-02.html',
+		'as400-01.html',
+		'black-mesa-01.html',
+		'chappie-01.html',
+		'cics-01.html',
+		'computer-love-01.html',
+		'demon-roach-underground-01.html',
+		'demon-roach-underground-02.html',
+		'doom-01.html',
+		'fidonet-01.html',
+		'hack-the-planet-01.html',
+		'hack-the-planet-02.html',
+		'lain-02.html',
+		'rainbow-frog-01.html',
+		'skyfall-01.html',
+		'sneakers-01.html',
+		'system-shock-01.html',
+		'system-shock-02.html',
+		'templeos-01.html',
+		'terminator-atm.html',
+		'terry-a-davis-01.html',
+		'the-matrix-01.html',
+		'the-spy-who-shrunk-me-01.html',
+		'wargames-01.html',
+		'wargames-02.html',
+		'wargames-03.html',
+		'wargames-04.html'
+  ];
+
+  const termEl = document.getElementById('term');
+  const baseURL = 'https://www.rhodrifawr.com/ascii-html/';
+
+  async function showRandomLogo() {
+  const randomFile = logoFiles[Math.floor(Math.random() * logoFiles.length)];
+  const url = baseURL + randomFile;
+
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Failed to load ${randomFile}`);
+      const html = await response.text();
+
+      // Inject the HTML directly into the terminal
+      termEl.innerHTML = '<div class="ascii-wrapper">' + parseAsciiMacros(html) + '</div>';
+    } catch (error) {
+      termEl.innerHTML = `<div class="line">Error loading ASCII art.</div>`;
+      console.error(error);
     }
-    setTimeout(()=>typeLines(), 600);
+  }
 
     /* ---------- Buttons ---------- */
     document.getElementById('enterBtn').addEventListener('click', ()=>{
@@ -231,25 +370,29 @@
       alert('This is a starter page. Edit index.html to add your projects, links and custom content.');
     });
 
-    /* ---------- Copy welcome message ---------- */
-    document.getElementById('copyBtn').addEventListener('click', async ()=>{
-      const text = lines.join('\n');
-      try{ await navigator.clipboard.writeText(text); alert('Welcome message copied to clipboard') }catch(e){ alert('Copy failed — your browser may block clipboard access') }
-    });
+      // Replace Copy button with Regenerate
+  const copyBtn = document.getElementById('copyBtn');
+  copyBtn.textContent = 'Regenerate';
+  copyBtn.title = 'Load another random ASCII logo';
+  copyBtn.addEventListener('click', showRandomLogo);
 
-    /* ---------- Pulse toggle (simple theme tweak) ---------- */
-    let pulsing = true;
-    const root = document.documentElement;
-    document.getElementById('themeBtn').addEventListener('click', ()=>{
-      pulsing = !pulsing;
-      if(pulsing){
-        root.style.setProperty('--accent', '#00f6ff');
-        root.style.setProperty('--accent-2', '#8a2be2');
-      } else {
-        root.style.setProperty('--accent', '#66e0ff');
-        root.style.setProperty('--accent-2', '#6b6cff');
-      }
-    });
+// replace your old themeBtn click listener with this:
+const themeBtn = document.getElementById('themeBtn');
+themeBtn.addEventListener('click', () => {
+  useMatrixStyle = !useMatrixStyle;
+const root = document.documentElement;
+  if(useMatrixStyle){
+    // Matrix style ON: green letters, black bg fade, pulse button effect
+    root.style.setProperty('--accent', '#00ff00');      // optional accent tweak
+    root.style.setProperty('--accent-2', '#009900');
+    themeBtn.classList.add('pulse');
+  } else {
+    // revert to original colors and remove pulse
+    root.style.setProperty('--accent', '#00f6ff');
+    root.style.setProperty('--accent-2', '#8a2be2');
+    themeBtn.classList.remove('pulse');
+  }
+});
 
     /* ---------- cursor ripple effect ---------- */
     const ripple = document.getElementById('ripple');
@@ -275,10 +418,80 @@
       canvas.style.display='none';
       document.querySelector('.grid-bg').style.animation='none';
     }
+
+function parseAsciiMacros(input) {
+  const replacements = {
+    // Formatting
+    '%bld': '<span style="font-weight:bold">',
+    '&bld': '<span style="font-weight:bold">',
+    '%und': '<span style="text-decoration:underline">',
+    '&und': '<span style="text-decoration:underline">',
+
+    // Reset
+    '%clr': '</span>',
+    '&clr': '</span>',
+
+    // Foreground colors
+    '%blk': '<span style="color:#333">',
+    '&blk': '<span style="color:#333">',
+
+    '%red': '<span style="color:#f55">',
+    '&red': '<span style="color:#f55">',
+
+    '%grn': '<span style="color:#6f6">',
+    '&grn': '<span style="color:#6f6">',
+
+    '%yel': '<span style="color:#ffd700">',
+    '&yel': '<span style="color:#ffd700">',
+
+    '%dyel': '<span style="color:#ffee00">',
+    '&dyel': '<span style="color:#ffee00">',
+
+    '%blu': '<span style="color:#4fc3f7">',
+    '&blu': '<span style="color:#4fc3f7">',
+
+    '%dblu': '<span style="color:#00bcd4">',
+    '&dblu': '<span style="color:#00bcd4">',
+
+    '%mag': '<span style="color:#f0f">',
+    '&mag': '<span style="color:#f0f">',
+
+    '%cyn': '<span style="color:#0ff">',
+    '&cyn': '<span style="color:#0ff">',
+
+    '%whi': '<span style="color:#fff">',
+    '&whi': '<span style="color:#fff">',
+
+    // Background colors
+    '%bgblk': '<span style="background-color:#222">',
+    '&bgblk': '<span style="background-color:#222">',
+
+    '%bgblu': '<span style="background-color:#003366">',
+    '&bgblu': '<span style="background-color:#003366">',
+
+    '%bgwhi': '<span style="background-color:#fff">',
+    '&bgwhi': '<span style="background-color:#fff">',
+
+    // Literal %
+    '%%': '%'
+  };
+
+  const sortedKeys = Object.keys(replacements).sort((a, b) => b.length - a.length);
+  let output = input;
+
+  sortedKeys.forEach(key => {
+    output = output.split(key).join(replacements[key]);
+  });
+
+  // Wrap each line to preserve line structure
+  const lines = output.split('\n').map(line => `<div class="line">${line}</div>`).join('');
+  return lines;
+}
+
+		showRandomLogo();	
   </script>
 </body>
 </html>
-
 
 
 
