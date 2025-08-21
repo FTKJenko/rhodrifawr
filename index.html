@@ -371,7 +371,6 @@ async function showRandomLogo() {
 
   if (isMobile) {
     const movieQuotes = [
-      `"I'm in." — Hackers (1995)`,
       `"The only winning move is not to play." — WarGames (1983)`,
       `"Wake up, Neo..." — The Matrix (1999)`,
       `"Would you like to play a game?" — WarGames (1983)`,
@@ -380,7 +379,24 @@ async function showRandomLogo() {
       `"Access granted." — Tron (1982)`,
       `"You can’t stop the signal." — Serenity (2005)`,
       `"Is it plugged in?" — Johnny Mnemonic (1995)`,
-      `"We’re in the mainframe." — Swordfish (2001)`
+      `"We’re in the mainframe." — Swordfish (2001)`,
+      `"I'm in." — Hackers (1995)`,
+      `"Hack the planet!" — Hackers (1995)`,
+      `"Mess with the best, die like the rest." — Hackers (1995)`,
+      `"There is no spoon." — The Matrix (1999)`,
+      `"Unfortunately, no one can be told what the Matrix is." — The Matrix (1999)`,
+      `"I know kung fu." — The Matrix (1999)`,
+      `"Shall we play a game?" — WarGames (1983)`,
+      `"The only winning move is not to play." — WarGames (1983)`,
+      `"I fight for the Users." — Tron (1982)`,
+      `"On the other side of the screen, it all looks so easy." — Tron (1982)`,
+      `"I've seen things you people wouldn't believe..." — Blade Runner (1982)`,
+      `"All those moments will be lost in time, like tears in rain." — Blade Runner (1982)`,
+      `"Hello, friend." — Mr. Robot (2015)`,
+      `"Control is an illusion." — Mr. Robot (2015)`,
+      `"You're not seeing what's above you." — Mr. Robot (2015)`,
+      `"The sky above the port was the color of television, tuned to a dead channel." — Neuromancer (1984)`,
+      `"See, the world is full of things more powerful than us. But if you know how to ride them, they can carry you to greatness." — Snow Crash (1992)`
     ];
 
     const quote = movieQuotes[Math.floor(Math.random() * movieQuotes.length)];
@@ -484,6 +500,20 @@ const root = document.documentElement;
       canvas.style.display='none';
       document.querySelector('.grid-bg').style.animation='none';
     }
+
+function typewriterQuote(quote, element, speed = 25) {
+  element.innerHTML = ''; // clear previous
+  let i = 0;
+  function type() {
+    if (i < quote.length) {
+      element.innerHTML += quote.charAt(i);
+      i++;
+      setTimeout(type, speed);
+    }
+  }
+  type();
+}
+
 
 function parseAsciiMacros(input) {
   const replacements = {
