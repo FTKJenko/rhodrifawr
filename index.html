@@ -161,9 +161,13 @@
   display: inline;
 }
 .term .line {
-  display: inline-block;
-  text-align: left; 
+  font-family: 'Orbitron', monospace;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+  padding: 12px 0;
 }
+
 .term {
   font-family: monospace;
   font-size: 13px;
@@ -306,6 +310,22 @@ function drawMatrix(){
 
 drawMatrix();
 
+function isMobile() {
+  return window.innerWidth < 700; // adjust if needed
+}
+
+const movieQuotes = [
+  `"I'm in." — Hackers (1995)`,
+  `"The only winning move is not to play." — WarGames (1983)`,
+  `"Wake up, Neo..." — The Matrix (1999)`,
+  `"Would you like to play a game?" — WarGames (1983)`,
+  `"This is your last chance." — The Matrix (1999)`,
+  `"They’re watching us." — Enemy of the State (1998)`,
+  `"Access granted." — Tron (1982)`,
+  `"Is it plugged in?" — Johnny Mnemonic (1995)`,
+  `"You can’t stop the signal." — Serenity (2005)`
+];
+
 
 	function stripAnsiCodes(text) {
 	  return text.replace(/\x1b\[[0-9;]*m/g, '');
@@ -346,6 +366,36 @@ drawMatrix();
   const baseURL = 'https://www.rhodrifawr.com/ascii-html/';
 
 async function showRandomLogo() {
+  // Show quote instead of ASCII art on mobile
+  const isMobile = window.innerWidth < 700;
+
+  if (isMobile) {
+    const movieQuotes = [
+      `"I'm in." — Hackers (1995)`,
+      `"The only winning move is not to play." — WarGames (1983)`,
+      `"Wake up, Neo..." — The Matrix (1999)`,
+      `"Would you like to play a game?" — WarGames (1983)`,
+      `"This is your last chance." — The Matrix (1999)`,
+      `"They're watching us." — Enemy of the State (1998)`,
+      `"Access granted." — Tron (1982)`,
+      `"You can’t stop the signal." — Serenity (2005)`,
+      `"Is it plugged in?" — Johnny Mnemonic (1995)`,
+      `"We’re in the mainframe." — Swordfish (2001)`
+    ];
+
+    const quote = movieQuotes[Math.floor(Math.random() * movieQuotes.length)];
+    termEl.innerHTML = `<div class="line quote">${quote}</div>`;
+
+    // Centered, styled, no scroll
+    termEl.style.width = '100%';
+    termEl.style.maxWidth = '100%';
+    termEl.style.margin = '0 auto';
+    termEl.style.overflowX = 'hidden';
+
+    return;
+  }
+
+  // Desktop: Show ASCII art
   const randomFile = logoFiles[Math.floor(Math.random() * logoFiles.length)];
   const url = baseURL + randomFile;
 
@@ -354,18 +404,15 @@ async function showRandomLogo() {
     if (!response.ok) throw new Error(`Failed to load ${randomFile}`);
     const html = await response.text();
 
-    // Process macros and split into lines
+    // Process macros and calculate width
     const parsed = parseAsciiMacros(html);
     const lines = html.split('\n');
     const maxLineLength = Math.max(...lines.map(line => stripAnsiCodes(line).length));
 
-    // Font size (must match CSS)
-    const fontSize = 13;
-    const padding = 40; // a little room
+    const fontSize = 13; // match your CSS
+    const padding = 40;
     const estimatedWidth = fontSize * maxLineLength + padding;
-
-    // Clamp width to avoid breaking layout
-    const maxWidth = Math.min(window.innerWidth - 64, 800); // keep some margin
+    const maxWidth = Math.min(window.innerWidth - 64, 800);
     const finalWidth = Math.min(estimatedWidth, maxWidth);
 
     termEl.innerHTML = '<div class="ascii-wrapper">' + parsed + '</div>';
@@ -453,6 +500,12 @@ function parseAsciiMacros(input) {
     // Foreground colors
     '%blk': '<span style="color:#333">',
     '&blk': '<span style="color:#333">',
+
+    '%cya': '<span style="color:#0ff">', 
+    '&cya': '<span style="color:#0ff">',
+    '%cyn': '<span style="color:#0ff">',
+    '&cyn': '<span style="color:#0ff">',
+
 
     '%red': '<span style="color:#f55">',
     '&red': '<span style="color:#f55">',
