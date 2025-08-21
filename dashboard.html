@@ -18,6 +18,11 @@
 	  transform:translateZ(0);
 	  animation:slide 18s linear infinite;
 	}
+	  .threat-img {
+		  margin-top: 10px;
+		  max-width: 80px; /* keeps image small inside widget */
+		  filter: drop-shadow(0 0 6px #ff003388); /* neon glow */
+		}
 	.grid-bg::after{
 	  content:"";position:absolute;inset:0;background-image:
 		linear-gradient(0deg, rgba(255,255,255,0.008) 1px, transparent 1px),
@@ -241,4 +246,5 @@ fetch('https://api.ipify.org?format=json')
 
 </body>
 </html>
+
 
