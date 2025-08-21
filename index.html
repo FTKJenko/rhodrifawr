@@ -170,9 +170,11 @@
   line-height: 1.4;
   color: #bff7ff;
   white-space: pre;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: visible;
   text-align: center; 
+  box-sizing: border-box;
 }
 
 .term > .ascii-wrapper {
@@ -343,23 +345,40 @@ drawMatrix();
   const termEl = document.getElementById('term');
   const baseURL = 'https://www.rhodrifawr.com/ascii-html/';
 
-  async function showRandomLogo() {
+async function showRandomLogo() {
   const randomFile = logoFiles[Math.floor(Math.random() * logoFiles.length)];
   const url = baseURL + randomFile;
 
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Failed to load ${randomFile}`);
+    const html = await response.text();
 
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`Failed to load ${randomFile}`);
-      const html = await response.text();
+    // Process macros and split into lines
+    const parsed = parseAsciiMacros(html);
+    const lines = html.split('\n');
+    const maxLineLength = Math.max(...lines.map(line => stripAnsiCodes(line).length));
 
-      // Inject the HTML directly into the terminal
-      termEl.innerHTML = '<div class="ascii-wrapper">' + parseAsciiMacros(html) + '</div>';
-    } catch (error) {
-      termEl.innerHTML = `<div class="line">Error loading ASCII art.</div>`;
-      console.error(error);
-    }
+    // Font size (must match CSS)
+    const fontSize = 13;
+    const padding = 40; // a little room
+    const estimatedWidth = fontSize * maxLineLength + padding;
+
+    // Clamp width to avoid breaking layout
+    const maxWidth = Math.min(window.innerWidth - 64, 800); // keep some margin
+    const finalWidth = Math.min(estimatedWidth, maxWidth);
+
+    termEl.innerHTML = '<div class="ascii-wrapper">' + parsed + '</div>';
+    termEl.style.width = `${finalWidth}px`;
+    termEl.style.margin = '0 auto';
+    termEl.style.overflowX = 'auto';
+
+  } catch (error) {
+    termEl.innerHTML = `<div class="line">Error loading ASCII art.</div>`;
+    console.error(error);
   }
+}
+
 
     /* ---------- Buttons ---------- */
     document.getElementById('enterBtn').addEventListener('click', ()=>{
