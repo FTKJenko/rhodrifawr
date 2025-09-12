@@ -236,7 +236,7 @@
     <div class="cta">
       <button class="btn primary" id="enterBtn">Enter / Open Dashboard</button>
       <button class="btn ghost" id="aboutBtn">About this project</button>
-      <a href="projects.html" class="btn">Projects</a>
+      <a class="btn" href="#projects" role="button">Projects</a>
     </div>
 
     <div class="footer">Tip: it's lower than you think</div>
@@ -247,12 +247,14 @@
     <div class="meta">
       <div class="dot"></div><div class="dot yellow"></div><div class="dot green"></div>
     </div>
-    <div class="term" id="term" role="log" aria-live="polite">
-      <div class="line">Initializing...</div>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+	
+	<div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" id="copyBtn" title="Copy welcome message">Regenerate</button>
       <button class="btn" id="themeBtn" title="Toggle color pulse">Matrix</button>
+    </div>
+	
+    <div class="term" id="term" role="log" aria-live="polite">
+      <div class="line">Initializing...</div>
     </div>
   </aside>
 </section>
@@ -599,16 +601,3 @@ function parseAsciiMacros(input) {
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
