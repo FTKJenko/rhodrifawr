@@ -6,6 +6,10 @@ app = Flask(__name__)
 
 import os
 import requests
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
+
 
 def get_recent_cves(limit=10, page=1):
     user = os.getenv("OPENCVE_USER")
@@ -115,6 +119,7 @@ def index():
 port = int(os.environ.get("PORT", 5000))
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
+
 
 
 
