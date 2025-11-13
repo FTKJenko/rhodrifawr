@@ -24,6 +24,7 @@ def get_recent_cves(limit=10, page=1):
             cves.append({
                 "id": item.get("cve_id", "Unknown"),
                 "desc": item.get("description", "No description")[:200] + "..."
+                "published": item.get("created_at", "")[:10] 
             })
         return cves
     except requests.exceptions.HTTPError as e:
@@ -131,6 +132,7 @@ def index():
 port = int(os.environ.get("PORT", 5000))
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
+
 
 
 
