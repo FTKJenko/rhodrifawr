@@ -35,43 +35,26 @@ def get_recent_cves(limit=10, page=1):
         return []
 
 def get_ransomware_attacks(limit=10):
-    urls = [
-        "https://raw.githubusercontent.com/fastfire/deepdarkCTI/main/ransomware.json",
-        "https://raw.githubusercontent.com/monkeysecurity/ransomware-feed/main/ransomware.json"
-    ]
-    headers = {"User-Agent": "CyberDashboard/1.0"}
-    
-    for url in urls:
-        try:
-            r = requests.get(url, headers=headers, timeout=15)
-            r.raise_for_status()
-            data = r.json()
-
-            if isinstance(data, dict) and "victims" in data:
-                victims = data["victims"]
-            elif isinstance(data, list):
-                victims = data
-            else:
-                print(f"[!] Unknown ransomware JSON structure from {url}")
-                continue
-
-            if not victims:
-                continue
-
-            results = []
-            for v in victims[:limit]:
-                group = v.get("group") or v.get("group_name") or v.get("ransomware", "Unknown")
-                victim = v.get("victim") or v.get("title") or v.get("target", "Unknown")
-                date = v.get("attackdate") or v.get("published", "")
-                results.append({"group": group, "victim": victim, "date": date})
-            return results
-
-        except requests.exceptions.RequestException as e:
-            print(f"[!] Ransomware fetch error ({url}): {e}")
-            continue
-
-    print("[!] No ransomware data available from any source.")
-    return []
+    url = "https://api.ransomware.live/v2/recentvictims"
+    headers = {"User‑Agent": "CyberDashboard/1.0"}
+    try:
+        r = requests.get(url, headers=headers, timeout=15)
+        r.raise_for_status()
+        data = r.json()
+        results = []
+        for v in data[:limit]:
+            results.append({
+                "group": v.get("group", "Unknown"),
+                "victim": v.get("victim", "Unknown"),
+                "date": v.get("attackdate", "")
+            })
+        return results
+    except requests.exceptions.HTTPError as e:
+        print(f"[!] Ransomware fetch HTTP error: {e} – {r.text[:200]}")
+        return []
+    except Exception as e:
+        print(f"[!] Ransomware fetch error: {e}")
+        return []
 
 def get_cyber_news():
     feeds = [
@@ -132,6 +115,7 @@ def index():
 port = int(os.environ.get("PORT", 5000))
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
+
 
 
 
