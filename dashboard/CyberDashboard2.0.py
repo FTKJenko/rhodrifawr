@@ -57,8 +57,8 @@ def get_ransomware_attacks(limit=10):
         print(f"[!] Ransomware fetch HTTP error: {e} – {r.text[:200]}")
         return []
     except Exception as e:
-        print(f"[!] Ransomware fetch error: {e}")
-        return []
+    print(f"[!] Ransomware fetch error: {str(e).encode('utf-8', errors='replace').decode('utf-8')}")
+    return []
 
 def get_cyber_news():
     feeds = [
@@ -119,6 +119,7 @@ def index():
 port = int(os.environ.get("PORT", 5000))
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
+
 
 
 
