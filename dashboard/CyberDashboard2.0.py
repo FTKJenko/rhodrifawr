@@ -1,21 +1,16 @@
 from flask import Flask, render_template
 import requests, feedparser, os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 
 def get_recent_cves(limit=10):
-    """
-    Fetch recent CVEs from GitHub CVEProject feed.
-    Returns a list of dicts with id, summary, published.
-    """
-    year = datetime.now().year  
+    year = datetime.now().year
     url = f"https://raw.githubusercontent.com/CVEProject/cvelist/main/{year}.json"
     try:
         r = requests.get(url, timeout=15)
         r.raise_for_status()
         all_cves = r.json()
-
         cves = []
         for cve_id, details in list(all_cves.items())[:limit]:
             summary = details.get("summary", "No description available")
@@ -32,16 +27,15 @@ def get_recent_cves(limit=10):
 
 def get_ransomware_attacks(limit=10):
     urls = [
-        "https://api.ransomware.live/v2/recentvictims", 
-        "https://raw.githubusercontent.com/fastfire/deepdarkCTI/main/ransomware.json"
+        "https://raw.githubusercontent.com/fastfire/deepdarkCTI/main/ransomware.json",
+        "https://raw.githubusercontent.com/monkeysecurity/ransomware-feed/main/ransomware.json"
     ]
     headers = {"User-Agent": "CyberDashboard/1.0"}
+    
     for url in urls:
         try:
             r = requests.get(url, headers=headers, timeout=15)
-            if r.status_code != 200:
-                print(f"[!] Ransomware API error ({url}): {r.status_code}")
-                continue
+            r.raise_for_status()
             data = r.json()
 
             if isinstance(data, dict) and "victims" in data:
@@ -63,11 +57,12 @@ def get_ransomware_attacks(limit=10):
                 results.append({"group": group, "victim": victim, "date": date})
             return results
 
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             print(f"[!] Ransomware fetch error ({url}): {e}")
             continue
-    return []
 
+    print("[!] No ransomware data available from any source.")
+    return []
 
 def get_cyber_news():
     feeds = [
@@ -85,7 +80,6 @@ def get_cyber_news():
         print(f"[!] News fetch error: {e}")
         return []
 
-
 def get_threat_intel(limit=10):
     key = os.getenv("OTX_API_KEY")
     if not key:
@@ -95,9 +89,7 @@ def get_threat_intel(limit=10):
     url = f"https://otx.alienvault.com/api/v1/pulses/subscribed?page=1"
     try:
         r = requests.get(url, headers=headers, timeout=15)
-        if r.status_code != 200:
-            print(f"[!] OTX API error: {r.status_code} {r.text[:200]}")
-            return []
+        r.raise_for_status()
         data = r.json()
         pulses = data.get("results", [])[:limit]
         intel = []
@@ -109,10 +101,9 @@ def get_threat_intel(limit=10):
                 "tags": ", ".join(pulse.get("tags", [])) or "None"
             })
         return intel
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         print(f"[!] Threat intel fetch error: {e}")
         return []
-
 
 @app.route("/")
 def index():
@@ -130,6 +121,5 @@ def index():
     )
 
 port = int(os.environ.get("PORT", 5000))
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
