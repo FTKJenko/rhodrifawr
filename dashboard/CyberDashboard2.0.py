@@ -4,35 +4,36 @@ from datetime import datetime, timedelta, timezone
 
 app = Flask(__name__)
 
-def get_recent_cves(days_back=1, limit=10):
-    end_date = datetime.now(timezone.utc)
-    start_date = end_date - timedelta(days=days_back)
-    url = (
-        f"https://services.nvd.nist.gov/rest/json/cves/2.0?"
-        f"pubStartDate={start_date.isoformat()}Z&pubEndDate={end_date.isoformat()}Z"
-    )
-    headers = {"User-Agent": "CyberDashboard/1.0"}
+def get_recent_cves(limit=10):
+    """
+    Fetch recent CVEs from GitHub CVEProject feed.
+    Returns a list of dicts with id, summary, published.
+    """
+    year = datetime.now().year  
+    url = f"https://raw.githubusercontent.com/CVEProject/cvelist/main/{year}.json"
     try:
-        r = requests.get(url, headers=headers, timeout=15)
-        if r.status_code != 200:
-            print(f"[!] CVE API error: {r.status_code} {r.text[:200]}")
-            return []
-        data = r.json()
-        cves = []
-        for item in data.get("vulnerabilities", [])[:limit]:
-            cve_id = item["cve"]["id"]
-            desc = item["cve"]["descriptions"][0]["value"]
-            cves.append({"id": cve_id, "desc": desc[:200] + "..."})
-        return cves
-    except Exception as e:
-        print(f"[!] CVE fetch error: {e}")
-        return []
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
+        all_cves = r.json()
 
+        cves = []
+        for cve_id, details in list(all_cves.items())[:limit]:
+            summary = details.get("summary", "No description available")
+            published = details.get("published", "Unknown")
+            cves.append({
+                "id": cve_id,
+                "desc": summary[:200] + "...",
+                "published": published
+            })
+        return cves
+    except requests.exceptions.RequestException as e:
+        print(f"[!] GitHub CVE fetch error: {e}")
+        return []
 
 def get_ransomware_attacks(limit=10):
     urls = [
-        "https://api.ransomware.live/v2/recentvictims",  # main API
-        "https://raw.githubusercontent.com/fastfire/deepdarkCTI/main/ransomware.json"  # fallback
+        "https://api.ransomware.live/v2/recentvictims", 
+        "https://raw.githubusercontent.com/fastfire/deepdarkCTI/main/ransomware.json"
     ]
     headers = {"User-Agent": "CyberDashboard/1.0"}
     for url in urls:
@@ -43,7 +44,6 @@ def get_ransomware_attacks(limit=10):
                 continue
             data = r.json()
 
-            # Detect which format we got:
             if isinstance(data, dict) and "victims" in data:
                 victims = data["victims"]
             elif isinstance(data, list):
@@ -55,7 +55,6 @@ def get_ransomware_attacks(limit=10):
             if not victims:
                 continue
 
-            # Try flexible parsing
             results = []
             for v in victims[:limit]:
                 group = v.get("group") or v.get("group_name") or v.get("ransomware", "Unknown")
@@ -68,6 +67,7 @@ def get_ransomware_attacks(limit=10):
             print(f"[!] Ransomware fetch error ({url}): {e}")
             continue
     return []
+
 
 def get_cyber_news():
     feeds = [
@@ -128,13 +128,8 @@ def index():
         intel=intel,
         updated=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     )
-def dashboard():
-    cves = []  
-    ransomware = []
-    threat_intel = []
-    return render_template("dashboard.html", cves=cves, ransomware=ransomware, threat_intel=threat_intel)
 
-port = int(os.environ.get("PORT", 5000)) 
+port = int(os.environ.get("PORT", 5000))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
