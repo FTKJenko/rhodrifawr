@@ -4,25 +4,31 @@ from datetime import datetime, timezone
 
 app = Flask(__name__)
 
+import os
+import requests
+
 def get_recent_cves(limit=10):
-    year = datetime.now().year
-    url = f"https://raw.githubusercontent.com/CVEProject/cvelist/main/{year}.json"
+    user = os.getenv("OPENCVE_USER")
+    passwd = os.getenv("OPENCVE_PASS")
+    if not user or not passwd:
+        print("[!] OpenCVE credentials not set")
+        return []
+
+    url = f"https://www.opencve.io/api/cve?limit={limit}"
     try:
-        r = requests.get(url, timeout=15)
+        r = requests.get(url, auth=(user, passwd), timeout=15)
         r.raise_for_status()
-        all_cves = r.json()
+        data = r.json()
         cves = []
-        for cve_id, details in list(all_cves.items())[:limit]:
-            summary = details.get("summary", "No description available")
-            published = details.get("published", "Unknown")
+        for item in data.get("results", []):
             cves.append({
-                "id": cve_id,
-                "desc": summary[:200] + "...",
-                "published": published
+                "id": item.get("id", "Unknown"),
+                "desc": item.get("summary", "No description")[:200] + "...",
+                "cvss": item.get("cvss", "N/A")
             })
         return cves
-    except requests.exceptions.RequestException as e:
-        print(f"[!] GitHub CVE fetch error: {e}")
+    except Exception as e:
+        print(f"[!] OpenCVE fetch error: {e}")
         return []
 
 def get_ransomware_attacks(limit=10):
@@ -123,3 +129,4 @@ def index():
 port = int(os.environ.get("PORT", 5000))
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
+
