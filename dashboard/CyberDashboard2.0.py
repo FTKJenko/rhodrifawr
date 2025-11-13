@@ -7,26 +7,29 @@ app = Flask(__name__)
 import os
 import requests
 
-def get_recent_cves(limit=10):
+def get_recent_cves(limit=10, page=1):
     user = os.getenv("OPENCVE_USER")
     passwd = os.getenv("OPENCVE_PASS")
     if not user or not passwd:
         print("[!] OpenCVE credentials not set")
         return []
 
-    url = f"https://www.opencve.io/api/cve?limit={limit}"
+    url = f"https://app.opencve.io/api/cve?page={page}"
     try:
         r = requests.get(url, auth=(user, passwd), timeout=15)
         r.raise_for_status()
         data = r.json()
         cves = []
-        for item in data.get("results", []):
+        for item in data.get("results", [])[:limit]:
             cves.append({
                 "id": item.get("id", "Unknown"),
                 "desc": item.get("summary", "No description")[:200] + "...",
                 "cvss": item.get("cvss", "N/A")
             })
         return cves
+    except requests.exceptions.HTTPError as e:
+        print(f"[!] OpenCVE fetch HTTP error: {e} - {r.text[:200]}")
+        return []
     except Exception as e:
         print(f"[!] OpenCVE fetch error: {e}")
         return []
@@ -129,4 +132,5 @@ def index():
 port = int(os.environ.get("PORT", 5000))
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
+
 
