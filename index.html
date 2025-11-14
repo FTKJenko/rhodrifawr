@@ -3,36 +3,118 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Y Brenin Cyfiawn</title>
+  <title>Y Brenin Cyfiawn — CRT Mode</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
   <style>
+    /* -------------------------
+       Core variables & themes
+       ------------------------- */
     :root {
       --bg: #041026;
-      --crt-bg: #001700;
-      --phosphor: #00ff55;
+      --crt-bg: #000b03;
+      --phosphor: #00ff55; /* default */
       --muted: #7aa2c9;
       --mono: 'Orbitron', monospace;
       --ui: 'Inter', sans-serif;
+
+      /* helper RGB values for subtle translucent backgrounds if needed */
+      --ph-r: 0;
+      --ph-g: 255;
+      --ph-b: 85;
     }
 
-  
+    /* Theme mappings (toggle body.theme-*) */
+    body.theme-green { --phosphor: #00ff55; --ph-r:0; --ph-g:255; --ph-b:85; }
+    body.theme-amber { --phosphor: #ffb000; --ph-r:255; --ph-g:176; --ph-b:0; }
+    body.theme-ice   { --phosphor: #80f7ff; --ph-r:128; --ph-g:247; --ph-b:255; }
+    body.theme-white { --phosphor: #d0ffe4; --ph-r:208; --ph-g:255; --ph-b:228; }
+
+    /* -------------------------
+       Reset + base layout
+       ------------------------- */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html,body,#app { height: 100%; }
+    html,body { height: 100%; }
     body {
       font-family: var(--ui);
-      background: radial-gradient(900px 500px at 10% 10%, rgba(138,43,226,0.04), transparent 8%),
-                  radial-gradient(800px 300px at 90% 90%, rgba(0,246,255,0.02), transparent 10%),
+      background: radial-gradient(900px 500px at 10% 10%, rgba(138,43,226,0.02), transparent 8%),
+                  radial-gradient(800px 300px at 90% 90%, rgba(0,246,255,0.01), transparent 10%),
                   var(--bg);
-      color: #dff6ff;
+      color: var(--phosphor);
       -webkit-font-smoothing:antialiased;
-      overflow: auto;
-      padding: 28px;
+      overflow: hidden; /* we'll put scroll on viewport inner */
     }
 
-  
-    .wrap { display: grid; place-items: center; min-height: calc(100vh - 56px); }
+    /* viewport wrapper that we distort / apply full-screen CRT layers to */
+    .crt-viewport {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      transform-origin: center;
+      /* slight tilt like an old monitor */
+      transform: perspective(900px) rotateX(0.6deg) scale(1.01);
+    }
+
+    /* global scanlines + static (applies to full viewport) */
+    .crt-viewport::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9996;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.00) 0px,
+        rgba(0,0,0,0.00) 3px,
+        rgba(0,0,0,0.02) 4px
+      );
+      mix-blend-mode: multiply;
+      opacity: 0.45;
+    }
+    .crt-viewport::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0.08;
+      /* simple animated noise using gradients (small footprint) */
+      background-image:
+        linear-gradient(0deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+      background-size: 3px 3px, 2px 2px;
+      animation: staticShift .32s steps(2) infinite;
+      mix-blend-mode: screen;
+    }
+
+    @keyframes staticShift {
+      0% { transform: translate(0,0) }
+      25% { transform: translate(-1px, 1px) }
+      50% { transform: translate(1px, -1px) }
+      75% { transform: translate(-1px, 2px) }
+      100% { transform: translate(0,0) }
+    }
+
+    /* subtle global vignette */
+    .crt-vignette {
+      position: fixed; inset: 0; pointer-events: none; z-index: 9995;
+      background: radial-gradient(1200px 600px at 50% 28%,
+        rgba(0,0,0,0.00) 0%,
+        rgba(0,0,0,0.18) 60%,
+        rgba(0,0,0,0.85) 100%);
+      mix-blend-mode: multiply;
+    }
+
+    /* small wrapper for page content (keeps your original spacing) */
+    main { height: 100%; }
+
+    /* -------------------------
+       Your original layout, cleaned and adapted
+       ------------------------- */
+    .wrap { display: grid; place-items: center; min-height: calc(100vh - 56px); padding: 28px; }
     .crt-frame {
       width: min(1000px, 96%);
       max-width: 1100px;
@@ -45,10 +127,12 @@
       grid-template-columns: 1fr 360px;
       gap: 22px;
       align-items: start;
+      position: relative;
+      z-index: 10;
     }
 
     .terminal {
-      background: linear-gradient(180deg, rgba(0,0,0,0.85), rgba(0,0,0,0.75));
+      background: linear-gradient(180deg, rgba(0,0,0,0.88), rgba(0,0,0,0.76));
       border-radius: 12px;
       padding: 22px;
       color: var(--phosphor);
@@ -56,8 +140,8 @@
       position: relative;
       overflow: hidden;
       min-height: 420px;
-      box-shadow: inset 0 0 40px rgba(0,255,80,0.03);
-      <div class="crt-static"></div>
+      box-shadow: inset 0 0 40px rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.03);
+      z-index: 11;
     }
 
     .terminal::before {
@@ -67,7 +151,7 @@
       border-radius: 12px;
       pointer-events: none;
       background: radial-gradient(1200px 600px at 50% 30%,
-        rgba(0,255,90,0.02), rgba(0,0,0,0.3));
+        rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.02), rgba(0,0,0,0.35));
       mix-blend-mode: overlay;
     }
 
@@ -79,35 +163,33 @@
     }
     .led {
       width:12px; height:12px; border-radius:50%;
-      background: linear-gradient(180deg, rgba(0,255,80,0.95), rgba(0,200,60,0.7));
-      box-shadow: 0 0 8px rgba(0,255,80,0.25);
+      background: linear-gradient(180deg, rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.95), rgba(0,200,60,0.7));
+      box-shadow: 0 0 8px rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.25);
     }
     h1 { font-family: var(--mono); font-weight:700; color: var(--phosphor); font-size: clamp(18px, 2.8vw, 28px); margin-left: 6px; letter-spacing:1px; }
 
     .subtitle {
-      color: rgba(0,255,80,0.6);
+      color: rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.62);
       font-family: var(--mono);
       font-size: 12px;
       margin-top: 6px;
     }
 
     .screen {
-      background: radial-gradient(circle at 50% 45%, rgba(0,255,90,0.02), transparent 15%), transparent;
+      background: radial-gradient(circle at 50% 45%, rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.02), transparent 15%), transparent;
       border-radius: 8px;
       padding: 18px;
       min-height: 300px;
-      box-shadow: inset 0 0 40px rgba(0,255,80,0.02);
+      box-shadow: inset 0 0 40px rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.02);
       font-size: 14px;
       line-height: 1.45;
       color: var(--phosphor);
       white-space: pre-wrap;
       overflow: auto;
-      <div class="crt-static"></div>
+      position: relative;
     }
 
-    .screen .ghost {
-      color: rgba(0,255,80,0.35);
-    }
+    .screen .ghost { color: rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.35); }
 
     .panel {
       padding: 16px;
@@ -118,17 +200,17 @@
       display:flex;
       flex-direction:column;
       gap:12px;
+      z-index:11;
     }
     .panel h3 { font-family: var(--mono); font-size: 13px; color: var(--phosphor); margin-bottom: 6px; }
-    .panel p { font-size: 13px; color: #b8f2bf; margin-bottom: 6px; }
-
+    .panel p { font-size: 13px; color: rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.65); margin-bottom: 6px; }
 
     .cmds { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
     .cmd {
       font-family: var(--mono);
       font-size: 14px;
-      background: rgba(0,0,0,0.4);
-      border: 1px solid rgba(0,255,80,0.08);
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.08);
       padding: 10px 12px;
       border-radius: 8px;
       color: var(--phosphor);
@@ -137,89 +219,12 @@
       letter-spacing:1px;
       transition: transform .12s ease, box-shadow .12s ease;
     }
-    .cmd:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,255,80,0.06); }
-    .cmd.secondary { color: rgba(0,255,80,0.7); background: transparent; border-style: dashed; }
+    .cmd:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.06); }
+    .cmd.secondary { color: rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.72); background: transparent; border-style: dashed; }
 
-  
     .footer { margin-top: 12px; color: rgba(223,246,255,0.6); font-size: 13px; }
 
-    .scanlines {
-      position:absolute; inset:0; pointer-events:none;
-      background-image: repeating-linear-gradient(
-        to bottom,
-        rgba(0,0,0,0) 0px,
-        rgba(0,0,0,0) 3px,
-        rgba(0,0,0,0.02) 4px
-      );
-      mix-blend-mode: multiply;
-      opacity: 0.5;
-    }
-
-    .vignette {
-      position:absolute; inset:0; pointer-events:none;
-      background: radial-gradient(1200px 600px at 50% 30%,
-        rgba(0,0,0,0) 0%,
-        rgba(0,0,0,0.18) 60%,
-        rgba(0,0,0,0.7) 100%);
-      border-radius: 8px;
-    }
-
-  
-    #crtLoader {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(circle at 50% 30%, rgba(0,40,10,0.8), rgba(0,0,0,0.95));
-      z-index: 999999;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      overflow: hidden;
-      color: var(--phosphor);
-      font-family: var(--mono);
-    }
-    #crtLoader.visible { display:flex; animation: crtFadeIn .18s ease-out forwards; }
-
-    @keyframes crtFadeIn { from { opacity: 0 } to { opacity: 1 } }
-
-    #crtLoader .crt-window {
-      width: min(900px, 94%);
-      max-width: 920px;
-      height: min(70vh, 620px);
-      border-radius: 12px;
-      padding: 22px;
-      background: rgba(0,0,0,0.92);
-      border: 2px solid rgba(0,255,80,0.08);
-      box-shadow: 0 0 60px rgba(0,255,80,0.06), inset 0 0 40px rgba(0,255,80,0.02);
-      position: relative;
-      overflow: hidden;
-      <div class="crt-static"></div>
-    }
-
-
-    #crtLoader .crt-window::before{
-      content:"";
-      position:absolute; inset:0;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(0,255,80,0.02) 0px,
-        rgba(0,255,80,0.02) 2px,
-        transparent 3px
-      );
-      mix-blend-mode: overlay;
-      pointer-events:none;
-    }
-    #crtLoader .scanbar {
-      position:absolute; left: -10%; top: -25%; height: 25%;
-      width: 120%;
-      transform: skewY(-6deg);
-      background: linear-gradient(180deg, rgba(0,255,80,0) 0%, rgba(0,255,80,0.16) 50%, rgba(0,255,80,0) 100%);
-      animation: scanMove 2.6s linear infinite;
-      pointer-events:none;
-    }
-    @keyframes scanMove { 0%{ top:-30% } 100% { top:120% } }
-
- 
+    /* boot text area */
     .boot-text {
       white-space: pre-wrap;
       font-size: 14px;
@@ -229,269 +234,187 @@
       overflow: auto;
       padding-right: 8px;
     }
-    .boot-line.ghost { color: rgba(0,255,80,0.28) }
+    .boot-line.ghost { color: rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.28) }
     .boot-line.ok { color: rgba(160,255,190,0.95) }
 
-    @keyframes flick {
-      0% { opacity: 1 }
-      20% { opacity: 0.92 }
-      40% { opacity: 0.98 }
-      60% { opacity: 0.94 }
-      100% { opacity: 1 }
+    /* -------------------------
+       CRT overlay & loader
+       ------------------------- */
+    #crtLoader {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(0,40,10,0.86), rgba(0,0,0,0.98));
+      z-index: 100000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      overflow: hidden;
+      color: var(--phosphor);
+      font-family: var(--mono);
     }
-    #crtLoader.visible .crt-window { animation: flick 3s infinite; }
+    #crtLoader.visible { display:flex; animation: crtFadeIn .18s ease-out forwards; }
+    @keyframes crtFadeIn { from { opacity: 0 } to { opacity: 1 } }
 
-  
+    #crtLoader .crt-window {
+      width: min(900px, 94%);
+      max-width: 920px;
+      height: min(70vh, 620px);
+      border-radius: 12px;
+      padding: 22px;
+      background: rgba(0,0,0,0.94);
+      border: 2px solid rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.08);
+      box-shadow: 0 0 60px rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.06), inset 0 0 40px rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.02);
+      position: relative;
+      overflow: hidden;
+      z-index: 100001;
+    }
+
+    /* window scan overlay */
+    #crtLoader .crt-window::before{
+      content:"";
+      position:absolute; inset:0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.02) 0px,
+        rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.02) 2px,
+        transparent 3px
+      );
+      mix-blend-mode: overlay;
+      pointer-events:none;
+      z-index:100002;
+    }
+
+    /* vertical refresh beam for the window (authentic) */
+    .crt-refresh {
+      position:absolute;
+      left: 0; right:0;
+      top:-15%;
+      height:18%;
+      width:100%;
+      background:linear-gradient(
+        to bottom,
+        rgba(var(--ph-r),var(--ph-g),var(--ph-b),0) 0%,
+        rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.22) 50%,
+        rgba(var(--ph-r),var(--ph-g),var(--ph-b),0) 100%
+      );
+      animation: crtRefreshMove 3.7s linear infinite;
+      pointer-events:none;
+      z-index:100003;
+    }
+    @keyframes crtRefreshMove { 0% { top:-15%; } 100% { top:115%; } }
+
+    /* Power button for overlay */
+    .crt-power-btn {
+      position:absolute;
+      top:14px;
+      right:18px;
+      padding:6px 12px;
+      font-family:'Orbitron', monospace;
+      font-size:12px;
+      color: var(--phosphor);
+      background:black;
+      border:1px solid rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.9);
+      border-radius:4px;
+      cursor:pointer;
+      text-shadow:0 0 6px rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.9);
+      box-shadow:0 0 8px rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.25);
+      z-index:100004;
+    }
+
+    /* Chromatic aberration helper for title/important words */
+    .aberrate { position: relative; display:inline-block; }
+    .aberrate::before,
+    .aberrate::after { content: attr(data-text); position:absolute; left:0; top:0; pointer-events:none; }
+    .aberrate::before { color: rgba(var(--ph-r),var(--ph-g),var(--ph-b),0.36); transform: translateX(1px); filter: blur(.2px); }
+    .aberrate::after  { color: rgba(120,200,255,0.14); transform: translateX(-1px); filter: blur(.2px); }
+
+    /* phosphor ghosting for selected elements */
+    .phosphor-ghost { filter: blur(1px); opacity: 0.22; }
+
+    /* boot power-on flicker */
+    @keyframes crtPowerOn {
+      0% { opacity:0; filter:brightness(0); }
+      8% { opacity:1; filter:brightness(5); }
+      16% { opacity:0.3; }
+      22% { opacity:1; }
+      30% { opacity:0.6; }
+      44% { opacity:1; filter:brightness(1); }
+      100% { opacity:1; }
+    }
+    #crtLoader.visible .crt-window { animation: crtPowerOn .9s linear; }
+
+    /* responsive */
     @media (max-width: 840px) {
       .crt-frame { grid-template-columns: 1fr; }
       .panel { order: 2; }
       .terminal { order: 1; min-height: 360px; }
       #crtLoader .crt-window { height: 62vh; padding: 16px; }
     }
-
-.crt-power-btn {
-  position:absolute;
-  top:14px;
-  right:18px;
-  padding:6px 12px;
-  font-family:'Orbitron', monospace;
-  font-size:12px;
-  color:#00ff66;
-  background:black;
-  border:1px solid #00ff66;
-  border-radius:4px;
-  cursor:pointer;
-  text-shadow:0 0 6px #00ff66;
-  box-shadow:0 0 8px rgba(0,255,80,0.4);
-  z-index:999999;
-}
-
-
-.crt-scanlines {
-  position:absolute;
-  inset:0;
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      rgba(0,255,80,0.07) 0px,
-      rgba(0,255,80,0.07) 2px,
-      transparent 3px
-    );
-  pointer-events:none;
-  mix-blend-mode:overlay;
-  opacity:0.65;
-  z-index:20;
-}
-
-
-.crt-refresh {
-  position:absolute;
-  top:-15%;
-  height:18%;
-  width:100%;
-  background:linear-gradient(
-    to bottom,
-    rgba(0,255,80,0) 0%,
-    rgba(0,255,80,0.25) 50%,
-    rgba(0,255,80,0) 100%
-  );
-  animation: crtRefreshMove 3.7s linear infinite;
-  pointer-events:none;
-  z-index:30;
-}
-
-@keyframes crtRefreshMove {
-  0% { top:-15%; }
-  100% { top:115%; }
-}
-
-.crt-window,
-.terminal .screen {
-  transform: perspective(900px) translateZ(0) scale(1.01);
-  border-radius: 12px;
-}
-
-.crt-window::after,
-.terminal .screen::after {
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius: inherit;
-  background: radial-gradient(circle at 50% 50%,
-    rgba(255,255,255,0.12) 0%,
-    rgba(255,255,255,0.00) 65%,
-    rgba(0,0,0,0.7) 100%);
-  pointer-events:none;
-  mix-blend-mode:soft-light;
-}
-
-.aberrate {
-  position: relative;
-  display: inline-block;
-}
-
-.aberrate::before,
-.aberrate::after {
-  content: attr(data-text);
-  position: absolute;
-  left: 0;
-  top: 0;
-  pointer-events:none;
-}
-
-.aberrate::before {
-  color: rgba(0,255,80,0.4);
-  transform: translateX(1px);
-}
-
-.aberrate::after {
-  color: rgba(0,120,255,0.4);
-  transform: translateX(-1px);
-}
-
-.crt-static {
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  opacity:0.12;
-  background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...");
-  animation: staticShift .25s steps(4) infinite;
-  z-index:999;
-}
-
-@keyframes staticShift {
-  0%   {transform:translate(0,0);}
-  25%  {transform:translate(-2px,1px);}
-  50%  {transform:translate(1px,-1px);}
-  75%  {transform:translate(-1px,2px);}
-  100% {transform:translate(0,0);}
-}
-
-.phosphor-ghost {
-  filter: blur(1.2px);
-  opacity: 0.20;
-}
-
-
-.crt-scanlines {
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      rgba(0,255,80,0.06) 0px,
-      rgba(0,255,80,0.06) 2px,
-      rgba(0,255,80,0.00) 4px
-    );
-}
-
-
-@keyframes crtPowerOn {
-  0% { opacity:0; filter:brightness(0); }
-  8% { opacity:1; filter:brightness(5); }
-  16% { opacity:0.3; }
-  22% { opacity:1; }
-  30% { opacity:0.6; }
-  44% { opacity:1; filter:brightness(1); }
-  100% { opacity:1; }
-}
-
-#crtLoader.visible .crt-window {
-  animation: crtPowerOn .9s linear;
-}
-
-:root {
-  --crt-green: #00ff55;
-  --crt-amber: #ffb000;
-  --crt-ice:   #80f7ff;
-  --crt-white: #d0ffe4;
-}
-
-.theme-green { --phosphor: var(--crt-green); }
-.theme-amber { --phosphor: var(--crt-amber); }
-.theme-ice   { --phosphor: var(--crt-ice); }
-.theme-white { --phosphor: var(--crt-white); }
-
-
-body.theme-amber,
-body.theme-ice,
-body.theme-white,
-body.theme-green {
-  color: var(--phosphor) !important;
-}
-
-
-
   </style>
 </head>
 
-<body>
-  <main id="app" class="wrap">
-    <section class="crt-frame" role="region" aria-label="CRT homepage">
-      <div class="terminal" aria-live="polite">
-        <div class="topbar" aria-hidden="true">
-          <div class="led" aria-hidden="true"></div>
-          <h1>Rhodri Fawr</h1>
-        </div>
+<body class="theme-green">
+  <!-- global CRT viewport (applies scanlines/static globally) -->
+  <div class="crt-viewport" id="crtViewport">
+    <div class="crt-vignette" aria-hidden="true"></div>
 
-        <div class="subtitle">Croeso — welcome to the retro terminal</div>
+    <main id="app" class="wrap" role="main">
+      <section class="crt-frame" role="region" aria-label="CRT homepage">
+        <div class="terminal" aria-live="polite">
+          <div class="topbar" aria-hidden="true">
+            <div class="led" aria-hidden="true"></div>
+            <h1><span class="aberrate" data-text="Rhodri Fawr">Rhodri Fawr</span></h1>
+          </div>
 
-        <div class="screen" id="screen">
-          <div class="scanlines" aria-hidden="true"></div>
-          <div class="vignette" aria-hidden="true"></div>
-          <div id="bootArea" class="boot-text">
+          <div class="subtitle">Croeso — welcome to the retro terminal</div>
+
+          <div class="screen" id="screen">
+            <div id="bootArea" class="boot-text">
 Welcome to Rhodri Fawr — Home of projects and playful code.
 
 Type <span class="ghost">ENTER</span> or press the button on the right to open the dashboard.
 
 Use "Projects" to browse experiment pages.
+            </div>
           </div>
         </div>
-      </div>
 
-      <aside class="panel" aria-label="Control panel">
-        <h3>Controls</h3>
-        <p>Use the commands below to interact with the site.</p>
+        <aside class="panel" aria-label="Control panel">
+          <h3>Controls</h3>
+          <p>Use the commands below to interact with the site.</p>
 
-        <div class="cmds" role="menu" aria-label="Commands">
-          <button class="cmd" id="enterBtn" role="menuitem">> ENTER / Open Dashboard</button>
-          <button class="cmd secondary" id="aboutBtn" role="menuitem">> ABOUT</button>
-          <a class="cmd" href="projects.html" role="menuitem">> PROJECTS</a>
-        </div>
-      <div style="display:flex;gap:6px;margin-top:8px;">
-        <button class="cmd" onclick="setCRTTheme('green')">> GREEN</button>
-        <button class="cmd" onclick="setCRTTheme('amber')">> AMBER</button>
-        <button class="cmd" onclick="setCRTTheme('ice')">> ICE BLUE</button>
-        <button class="cmd" onclick="setCRTTheme('white')">> WHITE/GREEN</button>
-      </div>
-        <div class="footer">Tip: stay in school</div>
-      </aside>
-    </section>
-  </main>
+          <div class="cmds" role="menu" aria-label="Commands">
+            <button class="cmd" id="enterBtn" role="menuitem">> ENTER / Open Dashboard</button>
+            <button class="cmd secondary" id="aboutBtn" role="menuitem">> ABOUT</button>
+            <a class="cmd" href="projects.html" role="menuitem">> PROJECTS</a>
+          </div>
 
-  <!-- CRT Boot overlay (hidden until Enter) -->
-  <div id="crtLoader" aria-hidden="true" role="dialog" aria-label="Booting screen">
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="cmd" onclick="setCRTTheme('green')">> GREEN</button>
+            <button class="cmd" onclick="setCRTTheme('amber')">> AMBER</button>
+            <button class="cmd" onclick="setCRTTheme('ice')">> ICE BLUE</button>
+            <button class="cmd" onclick="setCRTTheme('white')">> WHITE/GREEN</button>
+          </div>
 
-    <!-- NEW: Close/Power button -->
-    <button id="crtCloseBtn" class="crt-power-btn">POWER</button>
+          <div class="footer">Tip: stay in school</div>
+        </aside>
+      </section>
+    </main>
 
-  <div class="crt-window" role="document" aria-live="assertive">
+    <div style="position:fixed;right:12px;bottom:12px;z-index:12;font-family:var(--ui);font-size:12px;color:rgba(255,255,255,0.6);">
+      <small>Built with ❤️ — CRT mode</small>
+    </div>
 
-    <!-- NEW: Horizontal scanlines -->
-    <div class="crt-scanlines"></div>
+    <!-- CRT Boot overlay (hidden until Enter) -->
+    <div id="crtLoader" aria-hidden="true" role="dialog" aria-label="Booting screen">
+      <button id="crtCloseBtn" class="crt-power-btn" aria-label="Close boot screen">POWER</button>
 
-    <!-- NEW: Refresh bar -->
-    <div class="crt-refresh"></div>
-
-    <!-- OLD diagonal scanbar kept but disabled visually -->
-    <div class="scanbar" aria-hidden="true" style="opacity:0;"></div>
-
-    <div id="crtBootText" class="boot-text" tabindex="0">
-<!-- boot lines inserted by JS -->
+      <div class="crt-window" role="document" aria-live="assertive">
+        <div class="crt-refresh" aria-hidden="true"></div>
+        <div id="crtBootText" class="boot-text" tabindex="0" aria-atomic="true"></div>
       </div>
     </div>
-  </div>
-
-  <div style="position:fixed;right:12px;bottom:12px;z-index:10;font-family:var(--ui);font-size:12px;color:rgba(255,255,255,0.6);">
-    <small>Built with ❤️ — CRT mode</small>
   </div>
 
   <script>
@@ -501,10 +424,11 @@ Use "Projects" to browse experiment pages.
       const bootText = document.getElementById('crtBootText');
       const loader = document.getElementById('crtLoader');
       const screenBoot = document.getElementById('bootArea');
+      const viewport = document.getElementById('crtViewport');
 
       const target = "https://rhodrifawr-production.up.railway.app/";
 
-      // Small helper: typewriter append
+      // helper: append line into boot overlay
       function appendLine(text, cls) {
         const line = document.createElement('div');
         line.className = 'boot-line' + (cls ? (' ' + cls) : '');
@@ -513,7 +437,7 @@ Use "Projects" to browse experiment pages.
         bootText.scrollTop = bootText.scrollHeight;
       }
 
-      // Build boot lines sequence
+      // Boot lines
       const bootLines = [
         "[BOOT] BIOS v2.91 (C) 1983 Rhodri Systems",
         "[OK] Power-on self-test... PASSED",
@@ -531,66 +455,69 @@ Use "Projects" to browse experiment pages.
         "[ACCESS GRANTED] Routing to dashboard..."
       ];
 
-      // When user clicks Enter
+      // Theme switcher
+      window.setCRTTheme = function (mode) {
+        document.body.classList.remove("theme-green","theme-amber","theme-ice","theme-white");
+        document.body.classList.add("theme-" + mode);
+      };
+
+      // Open CRT loader / boot sequence
       enterBtn.addEventListener('click', async () => {
-        // prepare overlay
         bootText.innerHTML = '';
         loader.classList.add('visible');
         loader.setAttribute('aria-hidden', 'false');
 
-        // mirror a small message into main screen too
+        // small message in main screen
         screenBoot.textContent = 'Waking remote dashboard — please stand by...';
 
-        // type lines sequentially
+        // run boot lines with pacing
         for (let i = 0; i < bootLines.length; i++) {
           appendLine(bootLines[i], bootLines[i].startsWith('[OK') ? 'ok' : '');
-          // natural typing pacing
-          await new Promise(res => setTimeout(res, 220 + Math.random() * 180));
+          await new Promise(res => setTimeout(res, 200 + Math.random() * 170));
         }
 
-        // Ping Railway to wake it up (no-cors)
+        // ping railway (no-cors — fires wake)
         try {
           await fetch(target, { mode: 'no-cors' });
-        } catch (e) {
-          // ignore — fetch with no-cors will often throw but still pings
-        }
+        } catch (e) { /* ignore */ }
 
-        // small buffer so server has time to accept connections
-        setTimeout(() => {
-          window.location.href = target;
-        }, 700);
+        // small buffer then redirect
+        setTimeout(() => window.location.href = target, 700);
       });
 
-      // About button
+      // About button (show in main terminal)
       aboutBtn.addEventListener('click', () => {
-        // show brief about in the terminal screen
         screenBoot.innerHTML = "About this project:\n\nA small home for projects, experiments and play. Rebuilt in CRT mode.";
       });
 
-      
+      // Close/Power button hides overlay
+      document.getElementById("crtCloseBtn").addEventListener("click", () => {
+        loader.classList.remove("visible");
+        loader.style.display = "none";
+        loader.setAttribute('aria-hidden','true');
+      });
+
+      // Keyboard Enter triggers overlay (when not focused on input)
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-         
           const active = document.activeElement;
           if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
           enterBtn.click();
         }
       });
-      
-document.getElementById("crtCloseBtn").addEventListener("click", () => {
-  const loader = document.getElementById("crtLoader");
-  loader.classList.remove("visible");
-  loader.style.display = "none";
-});
 
-function setCRTTheme(mode) {
-  document.body.classList.remove("theme-green","theme-amber","theme-ice","theme-white");
-  document.body.classList.add("theme-" + mode);
-}
+      // small accessibility: focus boot text when overlay appears
+      const observer = new MutationObserver(() => {
+        if (loader.classList.contains('visible')) {
+          const t = document.getElementById('crtBootText');
+          if (t) t.focus({preventScroll:true});
+        }
+      });
+      observer.observe(loader, { attributes: true, attributeFilter: ['class'] });
 
+      // set page to default theme (green)
+      setCRTTheme('green');
     })();
   </script>
 </body>
 </html>
-
-
