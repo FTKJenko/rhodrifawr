@@ -252,6 +252,64 @@
       .terminal { order: 1; min-height: 360px; }
       #crtLoader .crt-window { height: 62vh; padding: 16px; }
     }
+
+.crt-power-btn {
+  position:absolute;
+  top:14px;
+  right:18px;
+  padding:6px 12px;
+  font-family:'Orbitron', monospace;
+  font-size:12px;
+  color:#00ff66;
+  background:black;
+  border:1px solid #00ff66;
+  border-radius:4px;
+  cursor:pointer;
+  text-shadow:0 0 6px #00ff66;
+  box-shadow:0 0 8px rgba(0,255,80,0.4);
+  z-index:999999;
+}
+
+/* Authentic horizontal scanlines */
+.crt-scanlines {
+  position:absolute;
+  inset:0;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0,255,80,0.07) 0px,
+      rgba(0,255,80,0.07) 2px,
+      transparent 3px
+    );
+  pointer-events:none;
+  mix-blend-mode:overlay;
+  opacity:0.65;
+  z-index:20;
+}
+
+/* Vertical refresh beam */
+.crt-refresh {
+  position:absolute;
+  top:-15%;
+  height:18%;
+  width:100%;
+  background:linear-gradient(
+    to bottom,
+    rgba(0,255,80,0) 0%,
+    rgba(0,255,80,0.25) 50%,
+    rgba(0,255,80,0) 100%
+  );
+  animation: crtRefreshMove 3.7s linear infinite;
+  pointer-events:none;
+  z-index:30;
+}
+
+@keyframes crtRefreshMove {
+  0% { top:-15%; }
+  100% { top:115%; }
+}
+
+
   </style>
 </head>
 
@@ -298,9 +356,22 @@ Use "Projects" to browse experiment pages.
 
   <!-- CRT Boot overlay (hidden until Enter) -->
   <div id="crtLoader" aria-hidden="true" role="dialog" aria-label="Booting screen">
-    <div class="crt-window" role="document" aria-live="assertive">
-      <div class="scanbar" aria-hidden="true"></div>
-      <div id="crtBootText" class="boot-text" tabindex="0">
+
+    <!-- NEW: Close/Power button -->
+    <button id="crtCloseBtn" class="crt-power-btn">POWER</button>
+
+  <div class="crt-window" role="document" aria-live="assertive">
+
+    <!-- NEW: Horizontal scanlines -->
+    <div class="crt-scanlines"></div>
+
+    <!-- NEW: Refresh bar -->
+    <div class="crt-refresh"></div>
+
+    <!-- OLD diagonal scanbar kept but disabled visually -->
+    <div class="scanbar" aria-hidden="true" style="opacity:0;"></div>
+
+    <div id="crtBootText" class="boot-text" tabindex="0">
 <!-- boot lines inserted by JS -->
       </div>
     </div>
@@ -392,7 +463,15 @@ Use "Projects" to browse experiment pages.
           enterBtn.click();
         }
       });
+      // Close/POWER button for CRT overlay
+document.getElementById("crtCloseBtn").addEventListener("click", () => {
+  const loader = document.getElementById("crtLoader");
+  loader.classList.remove("visible");
+  loader.style.display = "none";
+});
+
     })();
   </script>
 </body>
 </html>
+
