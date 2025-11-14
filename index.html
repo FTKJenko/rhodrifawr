@@ -6,222 +6,314 @@
   <title>Y Brenin Cyfiawn</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --bg: #041026;
-      --crt-bg: #001700;
-      --phosphor: #00ff55;
-      --muted: #7aa2c9;
-      --mono: 'Orbitron', monospace;
-      --ui: 'Inter', sans-serif;
+      --bg: #010101; /* pure dark background */
       --crt-green: #00ff55;
       --crt-amber: #ffb000;
       --crt-ice:   #80f7ff;
       --crt-white: #d0ffe4;
+
+      --phosphor: var(--crt-green);
+      --mono: 'Orbitron', monospace;
+      --ui: 'Inter', sans-serif;
     }
 
-    * { box-sizing: border-box; margin:0; padding:0; }
-    html, body { height:100%; font-family: var(--ui); background: var(--bg); color: var(--phosphor); display:flex; justify-content:center; align-items:center; }
-    
-    body.theme-green { --phosphor: var(--crt-green); }
-    body.theme-amber { --phosphor: var(--crt-amber); }
-    body.theme-ice   { --phosphor: var(--crt-ice); }
-    body.theme-white { --phosphor: var(--crt-white); }
+    body {
+      margin:0; padding:0;
+      font-family: var(--ui);
+      height:100%;
+      background-color: var(--bg);
+      color: var(--phosphor);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      background-image: radial-gradient(circle at 50% 40%, rgba(0,255,80,0.08) 0%, transparent 60%);
+    }
 
+    /* Particles for ambient depth */
+    #particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: transparent;
+    }
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+      animation: float 20s linear infinite;
+    }
+    @keyframes float {
+      0% { transform: translate(0,0) }
+      50% { transform: translate(10px,10px) }
+      100% { transform: translate(-10px,-10px) }
+    }
+
+    .wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      z-index: 1;
+      position: relative;
+    }
+
+    /* CRT monitor container */
     .crt-monitor {
-      width: min(1000px, 95%);
-      max-width: 1100px;
-      border-radius: 24px;
-      padding: 20px;
-      background: linear-gradient(180deg, #0a1a20 0%, #001700 100%);
-      box-shadow: 0 12px 60px rgba(0,255,80,0.3);
+      position: relative;
+      background: #000c00;
+      border-radius: 40px;
+      padding: 40px 30px 60px 30px;
+      box-shadow: 0 12px 50px rgba(0,255,80,0.4), 0 0 100px rgba(0,255,80,0.1) inset;
       display: flex;
       flex-direction: column;
       align-items: center;
+      max-width: 1000px;
+      width: 90%;
     }
 
-    .crt-screen {
-      position: relative;
-      width: 100%;
-      background: var(--crt-bg);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: inset 0 0 40px rgba(0,255,80,0.05);
-      overflow: hidden;
-    }
-
+    /* Screen */
     .terminal {
+      position: relative;
+      background: linear-gradient(180deg, rgba(0,0,0,0.85), rgba(0,0,0,0.75));
+      border-radius: 24px / 32px;
+      padding: 24px;
+      width: 100%;
+      min-height: 420px;
       font-family: var(--mono);
       color: var(--phosphor);
-      font-size: 14px;
-      line-height: 1.4;
-      min-height: 360px;
-      position: relative;
+      box-shadow: inset 0 0 40px rgba(0,255,80,0.03);
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .terminal::before {
+      content:"";
+      position:absolute; inset:0;
+      border-radius:inherit;
+      background: radial-gradient(circle at 50% 40%, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.8) 80%);
+      pointer-events:none;
+      mix-blend-mode: soft-light;
     }
 
     .scanlines {
       position:absolute; inset:0;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(0,255,80,0.06) 0px,
-        rgba(0,255,80,0.06) 2px,
-        rgba(0,255,80,0) 4px
-      );
+      background: repeating-linear-gradient(to bottom, rgba(0,255,80,0.07) 0 2px, transparent 3px);
       pointer-events:none;
-      mix-blend-mode:overlay;
-      z-index:20;
+      mix-blend-mode: overlay;
+      opacity:0.5;
     }
 
     .vignette {
       position:absolute; inset:0;
-      background: radial-gradient(1200px 600px at 50% 30%,
-        rgba(0,0,0,0) 0%,
-        rgba(0,0,0,0.18) 60%,
-        rgba(0,0,0,0.7) 100%);
-      border-radius: 16px;
       pointer-events:none;
-      z-index:30;
+      background: radial-gradient(1200px 600px at 50% 30%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.18) 60%, rgba(0,0,0,0.7) 100%);
+      border-radius: inherit;
     }
 
-    .crt-refresh {
-      position:absolute;
-      top:-15%;
-      height:18%;
-      width:100%;
-      background: linear-gradient(to bottom, rgba(0,255,80,0) 0%, rgba(0,255,80,0.25) 50%, rgba(0,255,80,0) 100%);
-      animation: crtRefreshMove 3.7s linear infinite;
-      pointer-events:none;
-      z-index:40;
-    }
-    @keyframes crtRefreshMove {
-      0% { top:-15%; }
-      100% { top:115%; }
-    }
-
-    .crt-static {
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      opacity:0.1;
-      background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...");
-      animation: staticShift .25s steps(4) infinite;
-      z-index:50;
-    }
-    @keyframes staticShift {
-      0%   {transform:translate(0,0);}
-      25%  {transform:translate(-2px,1px);}
-      50%  {transform:translate(1px,-1px);}
-      75%  {transform:translate(-1px,2px);}
-      100% {transform:translate(0,0);}
-    }
-
-    .boot-text {
-      white-space: pre-wrap;
-      height: 100%;
-      overflow: auto;
-    }
-    .boot-line.ghost { color: rgba(0,255,80,0.28); }
-    .boot-line.ok { color: rgba(160,255,190,0.95); }
-
-    .crt-buttons {
+    .topbar {
       display:flex;
-      justify-content:center;
-      gap:8px;
-      margin-top:14px;
-      flex-wrap: wrap;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
     }
-    .crt-buttons button {
-      background:#000;
-      border:1px solid var(--phosphor);
-      color: var(--phosphor);
-      font-family: var(--mono);
-      font-size:12px;
-      padding:6px 12px;
-      border-radius:4px;
+    .led {
+      width:12px; height:12px; border-radius:50%;
+      background: linear-gradient(180deg, rgba(0,255,80,0.95), rgba(0,200,60,0.7));
+      box-shadow: 0 0 8px rgba(0,255,80,0.25);
+    }
+    h1 { font-family: var(--mono); font-weight:700; color: var(--phosphor); font-size: clamp(18px, 2.8vw, 28px); margin-left: 6px; letter-spacing:1px; }
+
+    .subtitle { color: rgba(0,255,80,0.6); font-family: var(--mono); font-size: 12px; margin-top: 6px; }
+
+    .screen {
+      position: relative;
+      border-radius: inherit;
+      background: transparent;
+      min-height: 300px;
+      padding: 18px;
+      font-size: 14px;
+      line-height: 1.45;
+      overflow: auto;
+      white-space: pre-wrap;
+      z-index:2;
+    }
+    .screen .ghost { color: rgba(0,255,80,0.35); }
+
+    /* Monitor buttons underneath */
+    .monitor-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .monitor-buttons button {
+      width: 32px; height: 12px;
+      background: #000c00;
+      border: 2px solid rgba(0,255,80,0.6);
+      border-radius: 4px;
+      box-shadow: 0 0 8px rgba(0,255,80,0.3);
       cursor:pointer;
-      box-shadow:0 0 6px rgba(0,255,80,0.4);
-      transition: 0.15s;
+      transition: 0.2s;
     }
-    .crt-buttons button:hover {
-      transform: translateY(-2px);
-      box-shadow:0 0 12px rgba(0,255,80,0.6);
+    .monitor-buttons button:hover { background: rgba(0,255,80,0.2); }
+
+    .panel {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(255,255,255,0.01));
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
     }
+    .panel h3 { font-family: var(--mono); font-size: 13px; color: var(--phosphor); margin-bottom: 6px; }
+    .panel p { font-size: 13px; color: #b8f2bf; margin-bottom: 6px; }
+    .cmds { display:flex; flex-wrap: wrap; gap:8px; }
+    .cmd { font-family: var(--mono); font-size: 14px; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,255,80,0.08); padding: 8px 12px; border-radius: 6px; color: var(--phosphor); cursor:pointer; text-align:left; }
+    .cmd.secondary { background:transparent; border-style:dashed; color: rgba(0,255,80,0.7); }
+    .footer { color: rgba(223,246,255,0.6); font-size: 12px; margin-top:8px; }
+
+    /* CRT loader overlay */
+    #crtLoader { position: fixed; inset:0; background: radial-gradient(circle at 50% 30%, rgba(0,40,10,0.8), rgba(0,0,0,0.95)); z-index:9999; display:none; justify-content:center; align-items:center; flex-direction:column; color:var(--phosphor); font-family:var(--mono); }
+    #crtLoader.visible { display:flex; animation: crtFadeIn .18s ease-out forwards; }
+    @keyframes crtFadeIn { from {opacity:0} to{opacity:1} }
+
+    /* Theme switching */
+    .theme-green { --phosphor: var(--crt-green); }
+    .theme-amber { --phosphor: var(--crt-amber); }
+    .theme-ice   { --phosphor: var(--crt-ice); }
+    .theme-white { --phosphor: var(--crt-white); }
+
+    body.theme-green, body.theme-amber, body.theme-ice, body.theme-white { color: var(--phosphor) !important; }
+
   </style>
 </head>
-<body class="theme-green">
-  <div class="crt-monitor">
-    <div class="crt-screen">
-      <div class="terminal" id="terminal">
-        <div class="scanlines"></div>
-        <div class="vignette"></div>
-        <div class="crt-refresh"></div>
-        <div class="crt-static"></div>
-        <div id="bootArea" class="boot-text">
+
+<body>
+  <div id="particles"></div>
+  <div class="wrap">
+    <div class="crt-monitor">
+      <div class="terminal" aria-live="polite">
+        <div class="topbar" aria-hidden="true">
+          <div class="led"></div>
+          <h1>Rhodri Fawr</h1>
+        </div>
+        <div class="subtitle">Croeso — welcome to the retro terminal</div>
+        <div class="screen" id="screen">
+          <div id="bootArea" class="boot-text">
 Welcome to Rhodri Fawr — Home of projects and playful code.
-
-Type ENTER or press the POWER button below to open the dashboard.
-
-Use "Projects" to browse experiment pages.
+Type <span class="ghost">ENTER</span> or press the buttons below to open the dashboard.
+          </div>
         </div>
       </div>
+
+      <!-- CRT monitor buttons -->
+      <div class="monitor-buttons">
+        <button onclick="setCRTTheme('green')"></button>
+        <button onclick="setCRTTheme('amber')"></button>
+        <button onclick="setCRTTheme('ice')"></button>
+        <button onclick="setCRTTheme('white')"></button>
+      </div>
+
+      <div class="panel">
+        <h3>Controls</h3>
+        <p>Use the commands below to interact with the site:</p>
+        <div class="cmds">
+          <button class="cmd" id="enterBtn">> ENTER / Open Dashboard</button>
+          <button class="cmd secondary" id="aboutBtn">> ABOUT</button>
+          <a class="cmd" href="projects.html">> PROJECTS</a>
+        </div>
+        <div class="footer">Tip: stay in school</div>
+      </div>
     </div>
-    <div class="crt-buttons">
-      <button id="powerBtn">POWER / ENTER</button>
-      <button onclick="setCRTTheme('green')">GREEN</button>
-      <button onclick="setCRTTheme('amber')">AMBER</button>
-      <button onclick="setCRTTheme('ice')">ICE BLUE</button>
-      <button onclick="setCRTTheme('white')">WHITE</button>
+  </div>
+
+  <!-- CRT Boot overlay -->
+  <div id="crtLoader" aria-hidden="true">
+    <div class="crt-window" role="document" aria-live="assertive">
+      <div class="crt-scanlines"></div>
+      <div class="crt-refresh"></div>
+      <div id="crtBootText" class="boot-text" tabindex="0"></div>
     </div>
   </div>
 
   <script>
-    const bootArea = document.getElementById('bootArea');
-    const powerBtn = document.getElementById('powerBtn');
-    const target = "https://rhodrifawr-production.up.railway.app/";
+    (function() {
+      const enterBtn = document.getElementById('enterBtn');
+      const aboutBtn = document.getElementById('aboutBtn');
+      const bootText = document.getElementById('crtBootText');
+      const loader = document.getElementById('crtLoader');
+      const screenBoot = document.getElementById('bootArea');
+      const target = "https://rhodrifawr-production.up.railway.app/";
 
-    const bootLines = [
-      "[BOOT] BIOS v2.91 (C) 1983 Rhodri Systems",
-      "[OK] Power-on self-test... PASSED",
-      "[OK] Memory check........ 8192KB",
-      "[OK] VRAM check.......... PASSED",
-      "[OK] I/O bus............. INITIALIZED",
-      "",
-      "[NET] Establishing uplink to remote host...",
-      "[NET] Negotiating secure channel...",
-      "[NET] Sending wake packet -> Railway",
-      "[NET] Awaiting node heartbeat...",
-      "[NET] Node responding. Waking services...",
-      "",
-      "[SYS] Finalizing session...",
-      "[ACCESS GRANTED] Routing to dashboard..."
-    ];
-
-    function appendLine(text, cls) {
-      const line = document.createElement('div');
-      line.className = 'boot-line' + (cls ? ' ' + cls : '');
-      line.textContent = text;
-      bootArea.appendChild(line);
-      bootArea.scrollTop = bootArea.scrollHeight;
-    }
-
-    powerBtn.addEventListener('click', async () => {
-      bootArea.innerHTML = '';
-      for(let i=0;i<bootLines.length;i++){
-        appendLine(bootLines[i], bootLines[i].startsWith('[OK') ? 'ok':'');
-        await new Promise(res=>setTimeout(res,200+Math.random()*200));
+      function appendLine(text, cls) {
+        const line = document.createElement('div');
+        line.className = 'boot-line' + (cls ? (' ' + cls) : '');
+        line.textContent = text;
+        bootText.appendChild(line);
+        bootText.scrollTop = bootText.scrollHeight;
       }
-      try { await fetch(target,{mode:'no-cors'}); } catch(e){}
-      setTimeout(()=>{window.location.href=target;},700);
-    });
 
-    function setCRTTheme(mode){
-      document.body.classList.remove('theme-green','theme-amber','theme-ice','theme-white');
-      document.body.classList.add('theme-'+mode);
-    }
+      const bootLines = [
+        "[BOOT] BIOS v2.91 (C) 1983 Rhodri Systems",
+        "[OK] Power-on self-test... PASSED",
+        "[OK] Memory check........ 8192KB",
+        "[OK] VRAM check.......... PASSED",
+        "[OK] I/O bus............. INITIALIZED",
+        "",
+        "[NET] Establishing uplink...",
+        "[NET] Negotiating secure channel...",
+        "[NET] Sending wake packet -> Railway",
+        "[NET] Awaiting node heartbeat...",
+        "[SYS] Finalizing session...",
+        "[ACCESS GRANTED] Routing to dashboard..."
+      ];
 
-    document.addEventListener('keydown',e=>{
-      if(e.key==='Enter') powerBtn.click();
-    });
+      enterBtn.addEventListener('click', async () => {
+        bootText.innerHTML = '';
+        loader.classList.add('visible');
+        screenBoot.textContent = 'Waking remote dashboard — please stand by...';
+
+        for (let i=0;i<bootLines.length;i++){
+          appendLine(bootLines[i], bootLines[i].startsWith('[OK')?'ok':'');
+          await new Promise(r=>setTimeout(r,200+Math.random()*180));
+        }
+
+        try { await fetch(target,{mode:'no-cors'}); } catch(e){}
+        setTimeout(()=>{ window.location.href = target },700);
+      });
+
+      aboutBtn.addEventListener('click',()=> {
+        screenBoot.innerHTML = "About this project:\n\nA small home for projects, experiments and play. Rebuilt in CRT mode.";
+      });
+
+      document.addEventListener('keydown',(e)=> { if(e.key==='Enter') enterBtn.click(); });
+
+      function setCRTTheme(mode){
+        document.body.classList.remove("theme-green","theme-amber","theme-ice","theme-white");
+        document.body.classList.add("theme-" + mode);
+      }
+
+      // Create background particles
+      const particleCount = 80;
+      const particlesContainer = document.getElementById('particles');
+      for(let i=0;i<particleCount;i++){
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left=Math.random()*100+'%';
+        p.style.top=Math.random()*100+'%';
+        p.style.animationDuration= (15+Math.random()*15)+'s';
+        particlesContainer.appendChild(p);
+      }
+
+      window.setCRTTheme = setCRTTheme;
+    })();
   </script>
 </body>
 </html>
