@@ -452,15 +452,15 @@ termEl.style.overflowX = 'hidden';
 
 
     /* ---------- Buttons ---------- */
-    document.getElementById('enterBtn').addEventListener('click', async () => {
+document.getElementById('enterBtn').addEventListener('click', async () => {
   const loader = document.getElementById("loadingScreen");
   const boot = document.getElementById("bootLines");
   const target = "https://rhodrifawr-production.up.railway.app/";
 
-  loader.style.display = "flex";
+  // enable CRT loader
+  loader.classList.add("active");
   boot.textContent = "";
 
-  // CRT hacker boot text lines
   const lines = [
     "[BOOT]> BIOS v2.91 — © 1983 CYBERDYNE SYSTEMS",
     "[OK] Memory check.......... 8192 KB",
@@ -485,17 +485,12 @@ termEl.style.overflowX = 'hidden';
     boot.textContent += lines[i] + "\n";
   }
 
-  // Wake the Railway instance
   try { await fetch(target, { mode: "no-cors" }); } catch (e) {}
 
-  // Redirect user
   window.location.href = target;
 });
 
-  // Show loading overlay
-  loader.style.display = "flex";
 
-  // Try waking server (CORS doesn’t matter — it still wakes it)
   try {
     await fetch(target, { mode: "no-cors" });
   } catch (e) {}
@@ -649,9 +644,11 @@ function parseAsciiMacros(input) {
 
 		showRandomLogo();	
   </script>
-<!-- === CRT HACKER BOOT SCREEN === -->
+	
 <div id="loadingScreen" style="
   display:none;
+  opacity:0;
+  pointer-events:none;
   position:fixed;
   inset:0;
   background:black;
@@ -661,10 +658,10 @@ function parseAsciiMacros(input) {
   padding:40px;
   text-shadow:0 0 8px #00ff66;
   overflow:hidden;
-  display:flex;
   justify-content:center;
   align-items:center;
 ">
+
   <div id="crtContainer" style="
     width:90%;
     max-width:700px;
@@ -736,13 +733,18 @@ function parseAsciiMacros(input) {
   100% { opacity:1; }
 }
 
-#loadingScreen {
+#loadingScreen.active {
+  display:flex !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
   animation: crtFlicker 2.5s infinite;
 }
+
 </style>
 
 </body>
 </html>
+
 
 
 
