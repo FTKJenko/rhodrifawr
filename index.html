@@ -452,9 +452,22 @@ termEl.style.overflowX = 'hidden';
 
 
     /* ---------- Buttons ---------- */
-    document.getElementById('enterBtn').addEventListener('click', ()=>{
-    window.location.href = 'dashboard.html';
-    });
+    document.getElementById('enterBtn').addEventListener('click', async () => {
+  const loader = document.getElementById("loadingScreen");
+  const target = "https://rhodrifawr-production.up.railway.app/";
+
+  // Show loading overlay
+  loader.style.display = "flex";
+
+  // Try waking server (CORS doesn’t matter — it still wakes it)
+  try {
+    await fetch(target, { mode: "no-cors" });
+  } catch (e) {}
+
+  // Redirect after waking
+  window.location.href = target;
+});
+
 
     document.getElementById('aboutBtn').addEventListener('click', ()=>{
       alert('This is a starter page. Edit index.html to add your projects, links and custom content.');
@@ -582,7 +595,7 @@ function parseAsciiMacros(input) {
     '%bgwhi': '<span style="background-color:#fff">',
     '&bgwhi': '<span style="background-color:#fff">',
 
-    // Literal %
+    
     '%%': '%'
   };
 
@@ -593,14 +606,56 @@ function parseAsciiMacros(input) {
     output = output.split(key).join(replacements[key]);
   });
 
-  // Wrap each line to preserve line structure
+  
   const lines = output.split('\n').map(line => `<div class="line">${line}</div>`).join('');
   return lines;
 }
 
 		showRandomLogo();	
   </script>
+<div id="loadingScreen" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at 50% 30%, rgba(0,246,255,0.08), rgba(4,16,38,0.95));
+  z-index:999999;
+  color:#00f6ff;
+  font-family:'Orbitron', monospace;
+  letter-spacing:1px;
+  text-shadow:0 0 6px var(--accent);
+  backdrop-filter: blur(8px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+">
+
+  <div class="boot-lines" id="bootLines" style="
+    max-width:600px;
+    width:90%;
+    font-size:14px;
+    line-height:1.4;
+    opacity:0.85;
+  "></div>
+
+  <div class="synthetic-spinner" style="
+    margin-top:24px;
+    width:48px;
+    height:48px;
+    border:5px solid rgba(0,246,255,0.15);
+    border-top-color: var(--accent);
+    border-radius:50%;
+    animation: spin 1s linear infinite;
+  "></div>
+
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
 </body>
 </html>
+
 
 
