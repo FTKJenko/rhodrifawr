@@ -30,6 +30,29 @@
       -webkit-font-smoothing: antialiased;
       background-image: radial-gradient(circle at 50% 40%, rgba(0,255,80,0.08) 0%, transparent 60%);
     }
+    #crtCloseBtn {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      width: 48px;
+      height: 18px;
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      color: #00ff66;
+      background: #001100;
+      border: 2px solid #00ff55;
+      border-radius: 4px;
+      cursor: pointer;
+      text-shadow: 0 0 6px #00ff66;
+      box-shadow: 0 0 10px rgba(0,255,80,0.5);
+      z-index: 999999;
+      transition: all 0.2s ease;
+    }
+    
+    #crtCloseBtn:hover {
+      background: #002200;
+      box-shadow: 0 0 18px rgba(0,255,80,0.8);
+    }
 
     /* Particles for ambient depth */
     #particles {
@@ -277,13 +300,16 @@ Type <span class="ghost">ENTER</span> or press the buttons below to open the das
   </div>
 
   <!-- CRT Boot overlay -->
-  <div id="crtLoader" aria-hidden="true">
-    <div class="crt-window" role="document" aria-live="assertive">
-      <div class="crt-scanlines"></div>
-      <div class="crt-refresh"></div>
-      <div id="crtBootText" class="boot-text" tabindex="0"></div>
+<div id="crtLoader" aria-hidden="true" role="dialog" aria-label="Booting screen">
+  <button id="crtCloseBtn">POWER</button>
+  <div class="crt-window" role="document" aria-live="assertive">
+    <div class="crt-scanlines"></div>
+    <div class="crt-refresh"></div>
+    <div class="scanbar" aria-hidden="true" style="opacity:0;"></div>
+    <div id="crtBootText" class="boot-text" tabindex="0">
     </div>
   </div>
+</div>
 
   <script>
     (function() {
@@ -355,9 +381,17 @@ Type <span class="ghost">ENTER</span> or press the buttons below to open the das
       }
 
       window.setCRTTheme = setCRTTheme;
+      
+      document.getElementById("crtCloseBtn").addEventListener("click", () => {
+      const loader = document.getElementById("crtLoader");
+      loader.classList.remove("visible");
+      loader.style.display = "none";
+});
+
     })();
   </script>
 </body>
 </html>
+
 
 
