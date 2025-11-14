@@ -17,7 +17,7 @@
       --ui: 'Inter', sans-serif;
     }
 
-    /* Reset + layout */
+  
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html,body,#app { height: 100%; }
     body {
@@ -31,7 +31,7 @@
       padding: 28px;
     }
 
-    /* Center card */
+  
     .wrap { display: grid; place-items: center; min-height: calc(100vh - 56px); }
     .crt-frame {
       width: min(1000px, 96%);
@@ -47,7 +47,6 @@
       align-items: start;
     }
 
-    /* Left: main terminal area */
     .terminal {
       background: linear-gradient(180deg, rgba(0,0,0,0.85), rgba(0,0,0,0.75));
       border-radius: 12px;
@@ -58,9 +57,9 @@
       overflow: hidden;
       min-height: 420px;
       box-shadow: inset 0 0 40px rgba(0,255,80,0.03);
+      <div class="crt-static"></div>
     }
 
-    /* CRT glass curvature + vignette */
     .terminal::before {
       content: "";
       position: absolute;
@@ -72,7 +71,6 @@
       mix-blend-mode: overlay;
     }
 
-    /* monitor border */
     .topbar {
       display:flex;
       align-items:center;
@@ -93,7 +91,6 @@
       margin-top: 6px;
     }
 
-    /* terminal content area */
     .screen {
       background: radial-gradient(circle at 50% 45%, rgba(0,255,90,0.02), transparent 15%), transparent;
       border-radius: 8px;
@@ -105,13 +102,13 @@
       color: var(--phosphor);
       white-space: pre-wrap;
       overflow: auto;
+      <div class="crt-static"></div>
     }
 
     .screen .ghost {
       color: rgba(0,255,80,0.35);
     }
 
-    /* Right column - info panel */
     .panel {
       padding: 16px;
       border-radius: 10px;
@@ -125,7 +122,7 @@
     .panel h3 { font-family: var(--mono); font-size: 13px; color: var(--phosphor); margin-bottom: 6px; }
     .panel p { font-size: 13px; color: #b8f2bf; margin-bottom: 6px; }
 
-    /* command-styled buttons */
+
     .cmds { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
     .cmd {
       font-family: var(--mono);
@@ -143,10 +140,9 @@
     .cmd:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,255,80,0.06); }
     .cmd.secondary { color: rgba(0,255,80,0.7); background: transparent; border-style: dashed; }
 
-    /* footer */
+  
     .footer { margin-top: 12px; color: rgba(223,246,255,0.6); font-size: 13px; }
 
-    /* CRT visual effects (scanlines, slight curvature) */
     .scanlines {
       position:absolute; inset:0; pointer-events:none;
       background-image: repeating-linear-gradient(
@@ -168,7 +164,7 @@
       border-radius: 8px;
     }
 
-    /* Boot loader overlay (hidden by default) */
+  
     #crtLoader {
       position: fixed;
       inset: 0;
@@ -197,9 +193,10 @@
       box-shadow: 0 0 60px rgba(0,255,80,0.06), inset 0 0 40px rgba(0,255,80,0.02);
       position: relative;
       overflow: hidden;
+      <div class="crt-static"></div>
     }
 
-    /* scan overlay and moving bar */
+
     #crtLoader .crt-window::before{
       content:"";
       position:absolute; inset:0;
@@ -222,7 +219,7 @@
     }
     @keyframes scanMove { 0%{ top:-30% } 100% { top:120% } }
 
-    /* boot text area */
+ 
     .boot-text {
       white-space: pre-wrap;
       font-size: 14px;
@@ -235,7 +232,6 @@
     .boot-line.ghost { color: rgba(0,255,80,0.28) }
     .boot-line.ok { color: rgba(160,255,190,0.95) }
 
-    /* subtle CRT flicker */
     @keyframes flick {
       0% { opacity: 1 }
       20% { opacity: 0.92 }
@@ -245,7 +241,7 @@
     }
     #crtLoader.visible .crt-window { animation: flick 3s infinite; }
 
-    /* responsive */
+  
     @media (max-width: 840px) {
       .crt-frame { grid-template-columns: 1fr; }
       .panel { order: 2; }
@@ -270,7 +266,7 @@
   z-index:999999;
 }
 
-/* Authentic horizontal scanlines */
+
 .crt-scanlines {
   position:absolute;
   inset:0;
@@ -287,7 +283,7 @@
   z-index:20;
 }
 
-/* Vertical refresh beam */
+
 .crt-refresh {
   position:absolute;
   top:-15%;
@@ -309,6 +305,120 @@
   100% { top:115%; }
 }
 
+.crt-window,
+.terminal .screen {
+  transform: perspective(900px) translateZ(0) scale(1.01);
+  border-radius: 12px;
+}
+
+.crt-window::after,
+.terminal .screen::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(255,255,255,0.12) 0%,
+    rgba(255,255,255,0.00) 65%,
+    rgba(0,0,0,0.7) 100%);
+  pointer-events:none;
+  mix-blend-mode:soft-light;
+}
+
+.aberrate {
+  position: relative;
+  display: inline-block;
+}
+
+.aberrate::before,
+.aberrate::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events:none;
+}
+
+.aberrate::before {
+  color: rgba(0,255,80,0.4);
+  transform: translateX(1px);
+}
+
+.aberrate::after {
+  color: rgba(0,120,255,0.4);
+  transform: translateX(-1px);
+}
+
+.crt-static {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0.12;
+  background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...");
+  animation: staticShift .25s steps(4) infinite;
+  z-index:999;
+}
+
+@keyframes staticShift {
+  0%   {transform:translate(0,0);}
+  25%  {transform:translate(-2px,1px);}
+  50%  {transform:translate(1px,-1px);}
+  75%  {transform:translate(-1px,2px);}
+  100% {transform:translate(0,0);}
+}
+
+.phosphor-ghost {
+  filter: blur(1.2px);
+  opacity: 0.20;
+}
+
+
+.crt-scanlines {
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0,255,80,0.06) 0px,
+      rgba(0,255,80,0.06) 2px,
+      rgba(0,255,80,0.00) 4px
+    );
+}
+
+
+@keyframes crtPowerOn {
+  0% { opacity:0; filter:brightness(0); }
+  8% { opacity:1; filter:brightness(5); }
+  16% { opacity:0.3; }
+  22% { opacity:1; }
+  30% { opacity:0.6; }
+  44% { opacity:1; filter:brightness(1); }
+  100% { opacity:1; }
+}
+
+#crtLoader.visible .crt-window {
+  animation: crtPowerOn .9s linear;
+}
+
+:root {
+  --crt-green: #00ff55;
+  --crt-amber: #ffb000;
+  --crt-ice:   #80f7ff;
+  --crt-white: #d0ffe4;
+}
+
+.theme-green { --phosphor: var(--crt-green); }
+.theme-amber { --phosphor: var(--crt-amber); }
+.theme-ice   { --phosphor: var(--crt-ice); }
+.theme-white { --phosphor: var(--crt-white); }
+
+
+body.theme-amber,
+body.theme-ice,
+body.theme-white,
+body.theme-green {
+  color: var(--phosphor) !important;
+}
+
+
 
   </style>
 </head>
@@ -327,8 +437,6 @@
         <div class="screen" id="screen">
           <div class="scanlines" aria-hidden="true"></div>
           <div class="vignette" aria-hidden="true"></div>
-
-          <!-- initial terminal content -->
           <div id="bootArea" class="boot-text">
 Welcome to Rhodri Fawr — Home of projects and playful code.
 
@@ -348,7 +456,12 @@ Use "Projects" to browse experiment pages.
           <button class="cmd secondary" id="aboutBtn" role="menuitem">> ABOUT</button>
           <a class="cmd" href="projects.html" role="menuitem">> PROJECTS</a>
         </div>
-
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="cmd" onclick="setCRTTheme('green')">> GREEN</button>
+        <button class="cmd" onclick="setCRTTheme('amber')">> AMBER</button>
+        <button class="cmd" onclick="setCRTTheme('ice')">> ICE BLUE</button>
+        <button class="cmd" onclick="setCRTTheme('white')">> WHITE/GREEN</button>
+      </div>
         <div class="footer">Tip: stay in school</div>
       </aside>
     </section>
@@ -454,24 +567,30 @@ Use "Projects" to browse experiment pages.
         screenBoot.innerHTML = "About this project:\n\nA small home for projects, experiments and play. Rebuilt in CRT mode.";
       });
 
-      // Accessibility: allow Enter key to trigger the same as button
+      
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-          // avoid accidental Enter in input-like contexts
+         
           const active = document.activeElement;
           if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
           enterBtn.click();
         }
       });
-      // Close/POWER button for CRT overlay
+      
 document.getElementById("crtCloseBtn").addEventListener("click", () => {
   const loader = document.getElementById("crtLoader");
   loader.classList.remove("visible");
   loader.style.display = "none";
 });
 
+function setCRTTheme(mode) {
+  document.body.classList.remove("theme-green","theme-amber","theme-ice","theme-white");
+  document.body.classList.add("theme-" + mode);
+}
+
     })();
   </script>
 </body>
 </html>
+
 
