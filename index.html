@@ -220,6 +220,81 @@
 
     /* cursor ripple */
     .cursor-ripple{position:fixed;left:0;top:0;width:20px;height:20px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;mix-blend-mode:screen}
+	  /* =========================================================
+   CRT RETRO LOADING SCREEN
+   ========================================================= */
+#crtLoader {
+  position: fixed;
+  inset: 0;
+  background: #001b00; /* deep green/black */
+  z-index: 999999;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#crtLoader.visible {
+  display: flex;
+  animation: crtFadeIn 0.25s ease-out forwards;
+}
+
+@keyframes crtFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* green glow retro text */
+#crtLoader .loading-text {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.6rem;
+  color: #00ff55;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px #00ff55, 0 0 16px #00ff55;
+  opacity: 0.8;
+  animation: flicker 1.4s infinite steps(2);
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 0.45; }
+}
+
+/* scanline overlay */
+#crtLoader .crt-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,255,80,0.08) 0px,
+    rgba(0,255,80,0.08) 2px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+
+/* horizontal scan bar */
+#crtLoader .scan {
+  position: absolute;
+  top: -20%;
+  height: 20%;
+  width: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,255,80,0) 0%,
+    rgba(0,255,80,0.2) 50%,
+    rgba(0,255,80,0) 100%
+  );
+  animation: scanMove 2.8s linear infinite;
+}
+
+@keyframes scanMove {
+  0% { top: -20%; }
+  100% { top: 120%; }
+}
+
   </style>
 </head>
 <body>
@@ -744,6 +819,7 @@ function parseAsciiMacros(input) {
 
 </body>
 </html>
+
 
 
 
