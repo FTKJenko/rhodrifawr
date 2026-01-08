@@ -1,39 +1,189 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Simple Text Page</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Jenko — Terminal</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;700&display=swap" rel="stylesheet">
+
   <style>
-    body {
-      margin: 0;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background-color: white;
-      font-family: Arial, Helvetica, sans-serif;
+    :root{
+      --bg:#0a0a0a;
+      --text:#00ff66;
+      --muted:#0b3b20;
+      --bezel:#0b0f0b;
+      --glass:linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,.95));
+      --accent:rgba(0,255,102,.06);
     }
 
-    .text {
-      font-size: 64px; /* Change text size here */
-      color: black;
-      text-align: center;
-      margin-bottom: 20px; /* Space between text and image */
+    html,body{
+      height:100%;
+      margin:0;
+      background:radial-gradient(1200px 400px at 50% 10%, rgba(0,255,102,.02), transparent 8%), var(--bg);
+      color:var(--text);
+      font-family:'Source Code Pro', monospace;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      box-sizing:border-box;
     }
 
-    img {
-      max-width: 80%;
-      height: auto;
+    .monitor{
+      width:min(1050px,96vw);
+      background:var(--bezel);
+      padding:18px;
+      border-radius:14px;
+      box-shadow:0 30px 80px rgba(0,0,0,.65);
     }
+
+    .topbar{
+      display:flex;
+      gap:10px;
+      margin-bottom:12px;
+      padding-left:12px;
+    }
+
+    .dot{width:10px;height:10px;border-radius:50%;background:#ff5f56;}
+    .dot.yellow{background:#ffbd2e;}
+    .dot.green{background:#27c93f;}
+
+    .terminal-wrap{
+      background:var(--glass);
+      border-radius:8px;
+      padding:22px;
+      min-height:60vh;
+      overflow:auto;
+      border:1px solid var(--accent);
+    }
+
+    .screen{
+      white-space:pre;
+      overflow:auto;
+      max-height:68vh;
+    }
+
+    .ascii-logo{
+      white-space:pre;
+      line-height:1;
+      letter-spacing:1px;
+      margin:0 0 12px 0;
+      text-shadow:0 0 10px rgba(0,255,102,.06);
+    }
+
+    .boot-cursor{
+      display:inline-block;
+      width:10px;
+      height:16px;
+      background:var(--text);
+      margin-left:4px;
+      animation:blink 1s steps(1) infinite;
+      vertical-align:bottom;
+    }
+
+    @keyframes blink{
+      50%{opacity:0;}
+    }
+
+    .subtitle{color:var(--muted);font-size:12px;margin-bottom:10px;}
+
+    .prompt-line{display:flex;gap:10px;margin-top:12px;}
+    .typed{white-space:pre;}
+
+    .cursor{
+      display:inline-block;
+      width:10px;
+      height:18px;
+      background:var(--text);
+      margin-left:4px;
+      animation:blink 1s steps(1) infinite;
+    }
+
+    .hint{color:#3adc99;opacity:.6;font-size:12px;margin-top:18px;}
   </style>
 </head>
 <body>
-  <div class="text">
-    frig off
+
+<div class="monitor">
+  <div class="topbar">
+    <div class="dot"></div>
+    <div class="dot yellow"></div>
+    <div class="dot green"></div>
   </div>
 
-  <img src="threat-level-midnight.jpg" alt="Threat Level Midnight">
+  <div class="terminal-wrap">
+    <div class="screen">
+
+<pre class="ascii-logo" id="ascii-logo">
+______/\\\\\\\\\\\__________________________________________________________
+ _____\/////\\\///________________________________/\\\_______________________
+  _________\/\\\__________________________________\/\\\_______________________
+   _________\/\\\_________/\\\\\\\\___/\\/\\\\\\___\/\\\\\\\\________/\\\\\____
+    _________\/\\\_______/\\\/////\\\_\/\\\////\\\__\/\\\////\\\____/\\\///\\\__
+     _________\/\\\______/\\\\\\\\\\\__\/\\\__\//\\\_\/\\\\\\\\/____/\\\__\//\\\_
+      __/\\\___\/\\\_____\//\\///////___\/\\\___\/\\\_\/\\\///\\\___\//\\\__/\\\__
+       _\//\\\\\\\\\_______\//\\\\\\\\\\_\/\\\___\/\\\_\/\\\_\///\\\__\///\\\\\/___
+        __\/////////_________\//////////__\///____\///__\///____\///_____\/////_____
+</pre>
+
+      <div class="subtitle">Welcome. Type commands below.</div>
+
+      <div class="prompt-line">
+        <div>guest@jenko:~$</div>
+        <div>
+          <span class="typed" id="typed"></span><span class="cursor"></span>
+        </div>
+      </div>
+
+      <div class="hint">Press Enter to simulate command; Backspace to erase.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ascii = document.getElementById("ascii-logo");
+const fullText = ascii.textContent.replace(/\n$/, "");
+const lines = fullText.split("\n");
+ascii.textContent = "";
+
+const cursor = document.createElement("span");
+cursor.className = "boot-cursor";
+ascii.appendChild(cursor);
+
+let i = 0;
+
+function revealLine(){
+  if(i >= lines.length){
+    cursor.remove(); 
+    return;
+  }
+
+  const delay = i === 0 ? 300 : 80;
+  cursor.remove();
+  ascii.textContent += lines[i++] + "\n";
+  ascii.appendChild(cursor);
+  setTimeout(revealLine, delay);
+}
+
+revealLine();
+
+let buffer = "";
+const typed = document.getElementById("typed");
+
+window.addEventListener("keydown", e=>{
+  if(e.key==="Backspace"){
+    e.preventDefault();
+    buffer = buffer.slice(0,-1);
+  } else if(e.key==="Enter"){
+    e.preventDefault();
+    buffer = "";
+  } else if(e.key.length===1){
+    buffer += e.key;
+  }
+  typed.textContent = buffer;
+});
+</script>
+
 </body>
 </html>
