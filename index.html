@@ -20,7 +20,9 @@
     html,body{
       height:100%;
       margin:0;
-      background:radial-gradient(1200px 400px at 50% 10%, rgba(0,255,102,.02), transparent 8%), var(--bg);
+      background:
+        radial-gradient(1200px 400px at 50% 10%, rgba(0,255,102,.02), transparent 8%),
+        var(--bg);
       color:var(--text);
       font-family:'Source Code Pro', monospace;
       display:flex;
@@ -60,8 +62,8 @@
 
     .screen{
       white-space:pre;
-      overflow:auto;
       max-height:68vh;
+      overflow:auto;
     }
 
     .ascii-logo{
@@ -82,25 +84,45 @@
       vertical-align:bottom;
     }
 
-    @keyframes blink{
-      50%{opacity:0;}
-    }
-
-    .subtitle{color:var(--muted);font-size:12px;margin-bottom:10px;}
-
-    .prompt-line{display:flex;gap:10px;margin-top:12px;}
-    .typed{white-space:pre;}
-
     .cursor{
       display:inline-block;
       width:10px;
       height:18px;
       background:var(--text);
-      margin-left:4px;
+      margin-left:2px;
       animation:blink 1s steps(1) infinite;
+      vertical-align:bottom;
     }
 
-    .hint{color:#3adc99;opacity:.6;font-size:12px;margin-top:18px;}
+    @keyframes blink{
+      50%{opacity:0;}
+    }
+
+    .subtitle{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:10px;
+    }
+
+    .prompt-line{
+      margin-top:12px;
+      white-space:pre;
+    }
+
+    .prompt{
+      white-space:pre;
+    }
+
+    .typed{
+      white-space:pre;
+    }
+
+    .hint{
+      color:#3adc99;
+      opacity:.6;
+      font-size:12px;
+      margin-top:18px;
+    }
   </style>
 </head>
 <body>
@@ -115,72 +137,81 @@
   <div class="terminal-wrap">
     <div class="screen">
 
-<pre class="ascii-logo" id="ascii-logo">
-______/\\\\\\\\\\\__________________________________________________________
- _____\/////\\\///________________________________/\\\_______________________
-  _________\/\\\__________________________________\/\\\_______________________
-   _________\/\\\_________/\\\\\\\\___/\\/\\\\\\___\/\\\\\\\\________/\\\\\____
-    _________\/\\\_______/\\\/////\\\_\/\\\////\\\__\/\\\////\\\____/\\\///\\\__
-     _________\/\\\______/\\\\\\\\\\\__\/\\\__\//\\\_\/\\\\\\\\/____/\\\__\//\\\_
-      __/\\\___\/\\\_____\//\\///////___\/\\\___\/\\\_\/\\\///\\\___\//\\\__/\\\__
-       _\//\\\\\\\\\_______\//\\\\\\\\\\_\/\\\___\/\\\_\/\\\_\///\\\__\///\\\\\/___
-        __\/////////_________\//////////__\///____\///__\///____\///_____\/////_____
-</pre>
+<pre class="ascii-logo" id="ascii-logo"></pre>
 
-      <div class="subtitle">Welcome. Type commands below.</div>
+<div class="subtitle">Welcome. Type commands below.</div>
 
-      <div class="prompt-line">
-        <div>guest@jenko:~$</div>
-        <div>
-          <span class="typed" id="typed"></span><span class="cursor"></span>
-        </div>
-      </div>
+<div class="prompt-line">
+  <span class="prompt">guest@jenko:~$ </span><span class="typed" id="typed"></span><span class="cursor"></span>
+</div>
 
-      <div class="hint">Press Enter to simulate command; Backspace to erase.</div>
+<div class="hint">Press Enter to simulate command; Backspace to erase.</div>
+
     </div>
   </div>
 </div>
 
 <script>
+
 const ascii = document.getElementById("ascii-logo");
-const fullText = ascii.textContent.replace(/\n$/, "");
-const lines = fullText.split("\n");
-ascii.textContent = "";
 
-const cursor = document.createElement("span");
-cursor.className = "boot-cursor";
-ascii.appendChild(cursor);
+const asciiFiles = [
+  "ascii/logo1.txt",
+  "ascii/logo2.txt",
+  "ascii/logo3.txt"
+];
 
-let i = 0;
+const randomFile = asciiFiles[Math.floor(Math.random() * asciiFiles.length)];
 
-function revealLine(){
-  if(i >= lines.length){
-    cursor.remove(); 
-    return;
+fetch(randomFile)
+  .then(res => res.text())
+  .then(text => bootReveal(text))
+  .catch(() => {
+    ascii.textContent = "ASCII LOAD ERROR";
+  });
+
+function bootReveal(text){
+  const lines = text.replace(/\n$/, "").split("\n");
+  ascii.textContent = "";
+
+  const cursor = document.createElement("span");
+  cursor.className = "boot-cursor";
+  ascii.appendChild(cursor);
+
+  let i = 0;
+
+  function revealLine(){
+    if(i >= lines.length){
+      cursor.remove();
+      return;
+    }
+
+    const delay = i === 0 ? 300 : 80;
+    cursor.remove();
+    ascii.textContent += lines[i++] + "\n";
+    ascii.appendChild(cursor);
+    setTimeout(revealLine, delay);
   }
 
-  const delay = i === 0 ? 300 : 80;
-  cursor.remove();
-  ascii.textContent += lines[i++] + "\n";
-  ascii.appendChild(cursor);
-  setTimeout(revealLine, delay);
+  revealLine();
 }
-
-revealLine();
 
 let buffer = "";
 const typed = document.getElementById("typed");
 
 window.addEventListener("keydown", e=>{
-  if(e.key==="Backspace"){
+  if(e.key === "Backspace"){
     e.preventDefault();
     buffer = buffer.slice(0,-1);
-  } else if(e.key==="Enter"){
+  } 
+  else if(e.key === "Enter"){
     e.preventDefault();
     buffer = "";
-  } else if(e.key.length===1){
+  } 
+  else if(e.key.length === 1){
     buffer += e.key;
   }
+
   typed.textContent = buffer;
 });
 </script>
