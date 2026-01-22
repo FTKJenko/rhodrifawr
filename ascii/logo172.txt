@@ -1,0 +1,14 @@
+          J:::::::::J                                    k::::::k                          
+          J:::::::::J                                    k::::::k                          
+          JJ:::::::JJ                                    k::::::k                          
+            J:::::J    eeeeeeeeeeee    nnnn  nnnnnnnn     k:::::k    kkkkkkk ooooooooooo   
+            J:::::J  ee::::::::::::ee  n:::nn::::::::nn   k:::::k   k:::::koo:::::::::::oo 
+            J:::::J e::::::eeeee:::::een::::::::::::::nn  k:::::k  k:::::ko:::::::::::::::o
+            J:::::je::::::e     e:::::enn:::::::::::::::n k:::::k k:::::k o:::::ooooo:::::o
+            J:::::Je:::::::eeeee::::::e  n:::::nnnn:::::n k::::::k:::::k  o::::o     o::::o
+JJJJJJJ     J:::::Je:::::::::::::::::e   n::::n    n::::n k:::::::::::k   o::::o     o::::o
+J:::::J     J:::::Je::::::eeeeeeeeeee    n::::n    n::::n k:::::::::::k   o::::o     o::::o
+J::::::J   J::::::Je:::::::e             n::::n    n::::n k::::::k:::::k  o::::o     o::::o
+J:::::::JJJ:::::::Je::::::::e            n::::n    n::::nk::::::k k:::::k o:::::ooooo:::::o
+ JJ:::::::::::::JJ  e::::::::eeeeeeee    n::::n    n::::nk::::::k  k:::::ko:::::::::::::::o
+   JJ:::::::::JJ     ee:::::::::::::e    n::::n    n::::nk::::::k   k:::::koo:::::::::::oo
