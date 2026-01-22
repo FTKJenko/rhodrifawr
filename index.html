@@ -152,37 +152,33 @@
 </div>
 
 <script>
-
 const ascii = document.getElementById("ascii-logo");
 
-const asciiFiles = [
-  "ascii/logo1.txt",
-  "ascii/logo2.txt",
-  "ascii/logo3.txt"
-];
-
 const fallbackArt = `
-   J E N K O
-   ----------
-   TERMINAL READY
+J E N K O
+---------
+TERMINAL READY
 `;
 
-const randomFile = asciiFiles[Math.floor(Math.random() * asciiFiles.length)];
-
-fetch(randomFile)
-  .then(res => {
-    if (!res.ok) throw new Error("Fetch failed");
-    return res.text();
+fetch("ascii/index.json")
+  .then(r => {
+    if (!r.ok) throw new Error("index.json missing");
+    return r.json();
+  })
+  .then(files => {
+    const random = files[Math.floor(Math.random() * files.length)];
+    return fetch("ascii/" + random);
+  })
+  .then(r => {
+    if (!r.ok) throw new Error("ASCII fetch failed");
+    return r.text();
   })
   .then(text => {
-    // 🚨 Guard against HTML being returned
-    if (text.trim().startsWith("<!DOCTYPE") || text.includes("<html")) {
-      throw new Error("HTML returned instead of ASCII");
-    }
+    if (text.trim().startsWith("<")) throw new Error("HTML detected");
     bootReveal(text);
   })
   .catch(err => {
-    console.warn("ASCII load failed:", err.message);
+    console.warn("ASCII load error:", err.message);
     bootReveal(fallbackArt);
   });
 
@@ -201,7 +197,6 @@ function bootReveal(text){
       cursor.remove();
       return;
     }
-
     const delay = i === 0 ? 300 : 80;
     cursor.remove();
     ascii.textContent += lines[i++] + "\n";
@@ -211,27 +206,6 @@ function bootReveal(text){
 
   revealLine();
 }
-
-let buffer = "";
-const typed = document.getElementById("typed");
-
-window.addEventListener("keydown", e=>{
-  if(e.key === "Backspace"){
-    e.preventDefault();
-    buffer = buffer.slice(0,-1);
-  }
-  else if(e.key === "Enter"){
-    e.preventDefault();
-    buffer = "";
-  }
-  else if(e.key.length === 1){
-    buffer += e.key;
-  }
-
-  typed.textContent = buffer;
-});
 </script>
-
-
 </body>
 </html>
