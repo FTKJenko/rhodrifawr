@@ -161,13 +161,29 @@ const asciiFiles = [
   "ascii/logo3.txt"
 ];
 
+const fallbackArt = `
+   J E N K O
+   ----------
+   TERMINAL READY
+`;
+
 const randomFile = asciiFiles[Math.floor(Math.random() * asciiFiles.length)];
 
 fetch(randomFile)
-  .then(res => res.text())
-  .then(text => bootReveal(text))
-  .catch(() => {
-    ascii.textContent = "ASCII LOAD ERROR";
+  .then(res => {
+    if (!res.ok) throw new Error("Fetch failed");
+    return res.text();
+  })
+  .then(text => {
+    // 🚨 Guard against HTML being returned
+    if (text.trim().startsWith("<!DOCTYPE") || text.includes("<html")) {
+      throw new Error("HTML returned instead of ASCII");
+    }
+    bootReveal(text);
+  })
+  .catch(err => {
+    console.warn("ASCII load failed:", err.message);
+    bootReveal(fallbackArt);
   });
 
 function bootReveal(text){
@@ -203,11 +219,11 @@ window.addEventListener("keydown", e=>{
   if(e.key === "Backspace"){
     e.preventDefault();
     buffer = buffer.slice(0,-1);
-  } 
+  }
   else if(e.key === "Enter"){
     e.preventDefault();
     buffer = "";
-  } 
+  }
   else if(e.key.length === 1){
     buffer += e.key;
   }
@@ -215,6 +231,7 @@ window.addEventListener("keydown", e=>{
   typed.textContent = buffer;
 });
 </script>
+
 
 </body>
 </html>
