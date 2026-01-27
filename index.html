@@ -64,6 +64,10 @@ html,body{
 }
 
 @keyframes blink{50%{opacity:0;}}
+.prompt {
+  color: #03fc88;
+  font-weight: bold;
+}
 
 .output{margin-top:8px;}
 .prompt-line{margin-top:12px;}
@@ -89,8 +93,9 @@ html,body{
 <div class="output" id="output"></div>
 
 <div class="prompt-line">
-  guest@jenko:~$ <span id="input"></span><span class="cursor"></span>
+  <span class="prompt">guest@jenko:~$</span> <span id="input"></span><span class="cursor"></span>
 </div>
+
 
 <div class="hint">Try: <em>help</em></div>
 
