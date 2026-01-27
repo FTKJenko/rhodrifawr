@@ -20,7 +20,9 @@
 html,body{
   height:100%;
   margin:0;
-  background:radial-gradient(1200px 400px at 50% 10%, rgba(0,255,102,.02), transparent 8%), var(--bg);
+  background:
+    radial-gradient(1200px 400px at 50% 10%, rgba(0,255,102,.02), transparent 8%),
+    var(--bg);
   color:var(--text);
   font-family:'Source Code Pro', monospace;
   display:flex;
@@ -50,7 +52,7 @@ html,body{
 }
 
 .screen{white-space:pre;max-height:68vh;overflow:auto;}
-.ascii-logo{white-space:pre;margin-bottom:12px;}
+.ascii-logo{white-space:pre;margin-bottom:12px;text-shadow:0 0 10px rgba(0,255,102,.06);}
 .subtitle{color:var(--muted);font-size:12px;margin-bottom:10px;}
 
 .cursor{
@@ -80,9 +82,7 @@ html,body{
 <div class="terminal-wrap">
 <div class="screen" id="screen">
 
-<pre class="ascii-logo">J E N K O
----------
-TERMINAL READY</pre>
+<pre class="ascii-logo" id="ascii-logo"></pre>
 
 <div class="subtitle">Type commands below.</div>
 
@@ -99,6 +99,38 @@ TERMINAL READY</pre>
 </div>
 
 <script>
+/* ===== ASCII BOOT LOADER (RESTORED) ===== */
+const ascii = document.getElementById("ascii-logo");
+
+const fallbackArt = `
+J E N K O
+---------
+TERMINAL READY
+`;
+
+fetch("ascii/index.json")
+  .then(r => {
+    if (!r.ok) throw new Error("index.json missing");
+    return r.json();
+  })
+  .then(files => {
+    const random = files[Math.floor(Math.random() * files.length)];
+    return fetch("ascii/" + random);
+  })
+  .then(r => {
+    if (!r.ok) throw new Error("ASCII fetch failed");
+    return r.text();
+  })
+  .then(text => {
+    if (text.trim().startsWith("<")) throw new Error("HTML detected");
+    ascii.textContent = text;
+  })
+  .catch(err => {
+    console.warn("ASCII load error:", err.message);
+    ascii.textContent = fallbackArt;
+  });
+
+/* ===== TERMINAL LOGIC ===== */
 const input = document.getElementById("input");
 const output = document.getElementById("output");
 const screen = document.getElementById("screen");
@@ -106,7 +138,7 @@ const screen = document.getElementById("screen");
 let buffer = "";
 
 const games = [
-  "welsh uprising",
+  "cambrian revolt",
   "global thermonuclear war",
   "chess",
   "checkers"
@@ -146,8 +178,15 @@ function handleCommand(raw){
   if(lower === "help"){
     print("available commands:");
     print("  help");
+    print("  help games");
     print("  ls games");
     print("  play <game>");
+    return;
+  }
+
+  if(lower === "help games"){
+    print("games subsystem online.");
+    print("some files may be missing or restricted.");
     return;
   }
 
@@ -159,8 +198,8 @@ function handleCommand(raw){
   if(lower.startsWith("play ")){
     const game = lower.slice(5);
 
-    if(game === "welsh uprising"){
-      print("loading welsh uprising...");
+    if(game === "cambrian revolt"){
+      print("loading cambrian revolt...");
       setTimeout(() => {
         window.location.href = "game.html";
       }, 800);
