@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Owain Glyndwr</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: "Source Code Pro", monospace;
+      color: #5aff5a;
+    }
+
+    .game-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    canvas {
+      border: 3px solid #5aff5a;
+      image-rendering: pixelated;
+    }
+
+    .return-btn {
+      padding: 8px 16px;
+      border: 1px solid #5aff5a;
+      color: #5aff5a;
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 1px;
+      background: rgba(90,255,90,0.05);
+      transition: all 0.2s ease;
+    }
+
+    .return-btn:hover {
+      background: rgba(90,255,90,0.15);
+      box-shadow: 0 0 10px rgba(90,255,90,0.35);
+      transform: translateY(-1px);
+    }
+
+    .return-btn::before {
+      content: "< ";
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-wrap">
+  <canvas id="game" width="320" height="320"></canvas>
+
+  <a href="index.html" class="return-btn">exit_simulation</a>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const TILE = 32;
+
+const map = [
+  [1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,0,1,1,1,0,1],
+  [1,0,0,0,0,0,0,1,0,1],
+  [1,0,1,1,1,1,0,1,0,1],
+  [1,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,1,1,1,1,0,1],
+  [1,0,0,0,0,0,0,0,0,1],
+  [1,0,0,1,1,1,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1],
+];
+
+const player = {
+  x: TILE * 1 + 4,
+  y: TILE * 1 + 4,
+  size: 24,
+  speed: 2
+};
+
+const keys = {};
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
+
+function isColliding(x, y) {
+  const left   = Math.floor(x / TILE);
+  const right  = Math.floor((x + player.size - 1) / TILE);
+  const top    = Math.floor(y / TILE);
+  const bottom = Math.floor((y + player.size - 1) / TILE);
+
+  return (
+    map[top]?.[left] === 1 ||
+    map[top]?.[right] === 1 ||
+    map[bottom]?.[left] === 1 ||
+    map[bottom]?.[right] === 1
+  );
+}
+
+function movePlayer(dx, dy) {
+  if (!isColliding(player.x + dx, player.y)) {
+    player.x += dx;
+  }
+  if (!isColliding(player.x, player.y + dy)) {
+    player.y += dy;
+  }
+}
+
+function update() {
+  if (keys["ArrowUp"] || keys["w"]) movePlayer(0, -player.speed);
+  if (keys["ArrowDown"] || keys["s"]) movePlayer(0, player.speed);
+  if (keys["ArrowLeft"] || keys["a"]) movePlayer(-player.speed, 0);
+  if (keys["ArrowRight"] || keys["d"]) movePlayer(player.speed, 0);
+}
+
+function drawMap() {
+  for (let y = 0; y < map.length; y++) {
+    for (let x = 0; x < map[y].length; x++) {
+      ctx.fillStyle = map[y][x] === 1 ? "#2f6b2f" : "#6bc96b";
+      ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+    }
+  }
+}
+
+function drawPlayer() {
+  ctx.fillStyle = "#1e90ff";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+}
+
+function gameLoop() {
+  update();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawMap();
+  drawPlayer();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
