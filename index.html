@@ -96,7 +96,7 @@ html,body{
     0 0 8px rgba(0,255,102,.15);
 }
 
-.subtitle{color:var(--muted);font-size:12px;margin-bottom:10px;}
+.subtitle{color:var(--muted);font-size:12px;margin-bottom:4px;}
 
 .cursor{
   display:inline-block;
@@ -113,8 +113,8 @@ html,body{
   font-weight:bold;
 }
 
-.output{margin-top:8px;}
-.prompt-line{margin-top:12px;}
+.output{margin-top:4px;}
+.prompt-line{margin-top:4px;}
 .hint{color:#3adc99;opacity:.6;font-size:12px;margin-top:18px;}
 </style>
 </head>
@@ -147,6 +147,7 @@ html,body{
 </div>
 
 <script>
+<script>
 const ascii = document.getElementById("ascii-logo");
 
 const fallbackArt = `
@@ -170,12 +171,30 @@ fetch("ascii/index.json")
   })
   .then(text => {
     if (text.trim().startsWith("<")) throw new Error("HTML detected");
-    ascii.textContent = text;
+    bootReveal(text);
   })
   .catch(err => {
     console.warn("ASCII load error:", err.message);
-    ascii.textContent = fallbackArt;
+    bootReveal(fallbackArt);
   });
+
+function bootReveal(text){
+  const lines = text.replace(/\n$/, "").split("\n");
+  ascii.textContent = "";
+
+  let i = 0;
+
+  function revealNext(){
+    if(i >= lines.length) return;
+
+    ascii.textContent += lines[i++] + "\n";
+
+    const delay = i === 1 ? 320 : 70;
+    setTimeout(revealNext, delay);
+  }
+
+  revealNext();
+}
 
 const input = document.getElementById("input");
 const output = document.getElementById("output");
