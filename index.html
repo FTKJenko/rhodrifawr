@@ -8,6 +8,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;700&display=swap" rel="stylesheet">
 
 <style>
+@font-face{
+  font-family: "WarGamesTerminal";
+  src: url("fonts/WarGames Terminal R W.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root{
   --bg:#0a0a0a;
   --text:#00ff66;
@@ -24,7 +32,7 @@ html,body{
     radial-gradient(1200px 400px at 50% 10%, rgba(0,255,102,.02), transparent 8%),
     var(--bg);
   color:var(--text);
-  font-family:'Source Code Pro', monospace;
+  font-family: "WarGamesTerminal", "Source Code Pro", monospace;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -49,11 +57,44 @@ html,body{
   padding:22px;
   min-height:60vh;
   border:1px solid var(--accent);
+  position:relative;
+  overflow:hidden;
 }
 
-.screen{white-space:pre;max-height:68vh;overflow:auto;}
+/* CRT scanlines */
+.terminal-wrap::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,.28),
+      rgba(0,0,0,.28) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+  mix-blend-mode:overlay;
+  z-index:2;
+}
 
-.ascii-logo{white-space:pre;margin-bottom:12px;text-shadow:0 0 10px rgba(0,255,102,.06);}
+.screen{
+  white-space:pre;
+  max-height:68vh;
+  overflow:auto;
+  position:relative;
+  z-index:1;
+}
+
+.ascii-logo{
+  white-space:pre;
+  margin-bottom:12px;
+  text-shadow:
+    0 0 2px rgba(0,255,102,.6),
+    0 0 8px rgba(0,255,102,.15);
+}
+
 .subtitle{color:var(--muted);font-size:12px;margin-bottom:10px;}
 
 .cursor{
@@ -65,9 +106,10 @@ html,body{
 }
 
 @keyframes blink{50%{opacity:0;}}
-.prompt {
-  color: #03fc88;
-  font-weight: bold;
+
+.prompt{
+  color:#03fc88;
+  font-weight:bold;
 }
 
 .output{margin-top:8px;}
@@ -97,7 +139,6 @@ html,body{
   <span class="prompt">guest@jenko:~$</span> <span id="input"></span><span class="cursor"></span>
 </div>
 
-
 <div class="hint">Try: <em>help</em></div>
 
 </div>
@@ -105,7 +146,6 @@ html,body{
 </div>
 
 <script>
-/* ===== ASCII BOOT LOADER (RESTORED) ===== */
 const ascii = document.getElementById("ascii-logo");
 
 const fallbackArt = `
@@ -136,7 +176,6 @@ fetch("ascii/index.json")
     ascii.textContent = fallbackArt;
   });
 
-/* ===== TERMINAL LOGIC ===== */
 const input = document.getElementById("input");
 const output = document.getElementById("output");
 const screen = document.getElementById("screen");
@@ -144,10 +183,14 @@ const screen = document.getElementById("screen");
 let buffer = "";
 
 const games = [
-  "cambrian revolt",
-  "global thermonuclear war",
+  "  ",
+  "poker",
+  "fighter combat",
   "chess",
-  "checkers"
+  "checkers",
+  "  ",
+  "global thermonuclear war",
+  "cambrian revolt"
 ];
 
 function print(text){
@@ -219,3 +262,4 @@ function handleCommand(raw){
 }
 </script>
 </body>
+</html>
