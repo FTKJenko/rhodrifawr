@@ -1,262 +1,221 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jenko — Terminal</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Jenko — Terminal</title>
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;700&display=swap"
-    rel="stylesheet"
-  >
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;700&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --bg:#0a0a0a;
-      --text:#00ff66;
-      --muted:#0b3b20;
-      --bezel:#0b0f0b;
-      --glass:linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,.95));
-      --accent:rgba(0,255,102,.06);
-    }
+<style>
+:root{
+  --bg:#0a0a0a;
+  --text:#00ff66;
+  --muted:#0b3b20;
+  --bezel:#0b0f0b;
+  --glass:linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,.95));
+  --accent:rgba(0,255,102,.06);
+}
 
-    html,body{
-      height:100%;
-      margin:0;
-      background:
-        radial-gradient(
-          1200px 400px at 50% 10%,
-          rgba(0,255,102,.02),
-          transparent 8%
-        ),
-        var(--bg);
-      color:var(--text);
-      font-family:'Source Code Pro', monospace;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:28px;
-    }
+html,body{
+  height:100%;
+  margin:0;
+  background:
+    radial-gradient(1200px 400px at 50% 10%, rgba(0,255,102,.02), transparent 8%),
+    var(--bg);
+  color:var(--text);
+  font-family:'Source Code Pro', monospace;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:28px;
+}
 
-    .monitor{
-      width:min(1050px,96vw);
-      background:var(--bezel);
-      padding:18px;
-      border-radius:14px;
-    }
+.monitor{
+  width:min(1050px,96vw);
+  background:var(--bezel);
+  padding:18px;
+  border-radius:14px;
+}
 
-    .topbar{
-      display:flex;
-      gap:10px;
-      margin-bottom:12px;
-      padding-left:12px;
-    }
+.topbar{display:flex;gap:10px;margin-bottom:12px;padding-left:12px;}
+.dot{width:10px;height:10px;border-radius:50%;background:#ff5f56;}
+.dot.yellow{background:#ffbd2e;}
+.dot.green{background:#27c93f;}
 
-    .dot{
-      width:10px;
-      height:10px;
-      border-radius:50%;
-      background:#ff5f56;
-    }
+.terminal-wrap{
+  background:var(--glass);
+  border-radius:8px;
+  padding:22px;
+  min-height:60vh;
+  border:1px solid var(--accent);
+}
 
-    .dot.yellow{background:#ffbd2e;}
-    .dot.green{background:#27c93f;}
+.screen{white-space:pre;max-height:68vh;overflow:auto;}
 
-    .terminal-wrap{
-      background:var(--glass);
-      border-radius:8px;
-      padding:22px;
-      min-height:60vh;
-      border:1px solid var(--accent);
-    }
+.ascii-logo{white-space:pre;margin-bottom:12px;text-shadow:0 0 10px rgba(0,255,102,.06);}
+.subtitle{color:var(--muted);font-size:12px;margin-bottom:10px;}
 
-    .screen{
-      white-space:pre;
-      max-height:68vh;
-      overflow:auto;
-    }
+.cursor{
+  display:inline-block;
+  width:10px;
+  height:18px;
+  background:var(--text);
+  animation:blink 1s steps(1) infinite;
+}
 
-    .ascii-logo{
-      white-space:pre;
-      margin-bottom:12px;
-      text-shadow:0 0 10px rgba(0,255,102,.06);
-    }
+@keyframes blink{50%{opacity:0;}}
+.prompt {
+  color: #03fc88;
+  font-weight: bold;
+}
 
-    .subtitle{
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:10px;
-    }
-
-    .cursor{
-      display:inline-block;
-      width:10px;
-      height:18px;
-      background:var(--text);
-      animation:blink 1s steps(1) infinite;
-    }
-
-    @keyframes blink{
-      50%{opacity:0;}
-    }
-
-    .prompt{
-      color:#03fc88;
-      font-weight:bold;
-    }
-
-    .output{margin-top:8px;}
-    .prompt-line{margin-top:12px;}
-
-    .hint{
-      color:#3adc99;
-      opacity:.6;
-      font-size:12px;
-      margin-top:18px;
-    }
-  </style>
+.output{margin-top:8px;}
+.prompt-line{margin-top:12px;}
+.hint{color:#3adc99;opacity:.6;font-size:12px;margin-top:18px;}
+</style>
 </head>
 
 <body>
-  <div class="monitor">
-    <div class="topbar">
-      <div class="dot"></div>
-      <div class="dot yellow"></div>
-      <div class="dot green"></div>
-    </div>
+<div class="monitor">
+<div class="topbar">
+  <div class="dot"></div>
+  <div class="dot yellow"></div>
+  <div class="dot green"></div>
+</div>
 
-    <div class="terminal-wrap">
-      <div class="screen" id="screen">
+<div class="terminal-wrap">
+<div class="screen" id="screen">
 
-        <pre class="ascii-logo" id="ascii-logo"></pre>
+<pre class="ascii-logo" id="ascii-logo"></pre>
 
-        <div class="subtitle">Type commands below.</div>
+<div class="subtitle">Type commands below.</div>
 
-        <div class="output" id="output"></div>
+<div class="output" id="output"></div>
 
-        <div class="prompt-line">
-          <span class="prompt">guest@jenko:~$</span>
-          <span id="input"></span><span class="cursor"></span>
-        </div>
+<div class="prompt-line">
+  <span class="prompt">guest@jenko:~$</span> <span id="input"></span><span class="cursor"></span>
+</div>
 
-        <div class="hint">Try: <em>help</em></div>
-      </div>
-    </div>
-  </div>
 
-  <script>
-    /* ===== ASCII BOOT LOADER (RESTORED) ===== */
-    const ascii = document.getElementById("ascii-logo");
+<div class="hint">Try: <em>help</em></div>
 
-    const fallbackArt =
-      J E N K O
-      ---------
-      TERMINAL READY
-    ;
+</div>
+</div>
+</div>
 
-    fetch("ascii/index.json")
-      .then(r => {
-        if (!r.ok) throw new Error("index.json missing");
-        return r.json();
-      })
-      .then(files => {
-        const random = files[Math.floor(Math.random() * files.length)];
-        return fetch("ascii/" + random);
-      })
-      .then(r => {
-        if (!r.ok) throw new Error("ASCII fetch failed");
-        return r.text();
-      })
-      .then(text => {
-        if (text.trim().startsWith("<")) throw new Error("HTML detected");
-        ascii.textContent = text;
-      })
-      .catch(err => {
-        console.warn("ASCII load error:", err.message);
-        ascii.textContent = fallbackArt;
-      });
+<script>
+/* ===== ASCII BOOT LOADER (RESTORED) ===== */
+const ascii = document.getElementById("ascii-logo");
 
-    /* ===== TERMINAL LOGIC ===== */
-    const input = document.getElementById("input");
-    const output = document.getElementById("output");
-    const screen = document.getElementById("screen");
+const fallbackArt = `
+J E N K O
+---------
+TERMINAL READY
+`;
 
-    let buffer = "";
+fetch("ascii/index.json")
+  .then(r => {
+    if (!r.ok) throw new Error("index.json missing");
+    return r.json();
+  })
+  .then(files => {
+    const random = files[Math.floor(Math.random() * files.length)];
+    return fetch("ascii/" + random);
+  })
+  .then(r => {
+    if (!r.ok) throw new Error("ASCII fetch failed");
+    return r.text();
+  })
+  .then(text => {
+    if (text.trim().startsWith("<")) throw new Error("HTML detected");
+    ascii.textContent = text;
+  })
+  .catch(err => {
+    console.warn("ASCII load error:", err.message);
+    ascii.textContent = fallbackArt;
+  });
 
-    const games = [
-      "cambrian revolt",
-      "global thermonuclear war",
-      "chess",
-      "checkers"
-    ];
+/* ===== TERMINAL LOGIC ===== */
+const input = document.getElementById("input");
+const output = document.getElementById("output");
+const screen = document.getElementById("screen");
 
-    function print(text){
-      const line = document.createElement("div");
-      line.textContent = text;
-      output.appendChild(line);
-      screen.scrollTop = screen.scrollHeight;
+let buffer = "";
+
+const games = [
+  "cambrian revolt",
+  "global thermonuclear war",
+  "chess",
+  "checkers"
+];
+
+function print(text){
+  const line = document.createElement("div");
+  line.textContent = text;
+  output.appendChild(line);
+  screen.scrollTop = screen.scrollHeight;
+}
+
+document.addEventListener("keydown", e => {
+  if(e.key.length === 1){
+    buffer += e.key;
+    input.textContent = buffer;
+  }
+
+  if(e.key === "Backspace"){
+    buffer = buffer.slice(0,-1);
+    input.textContent = buffer;
+  }
+
+  if(e.key === "Enter"){
+    handleCommand(buffer);
+    buffer = "";
+    input.textContent = "";
+  }
+});
+
+function handleCommand(raw){
+  const cmd = raw.trim();
+  const lower = cmd.toLowerCase();
+
+  print("guest@jenko:~$ " + cmd);
+
+  if(lower === "help"){
+    print("available commands:");
+    print("  help");
+    print("  help games");
+    print("  ls games");
+    print("  play <game>");
+    return;
+  }
+
+  if(lower === "help games"){
+    print("games subsystem online.");
+    print("some files may be missing or restricted.");
+    return;
+  }
+
+  if(lower === "ls games"){
+    games.forEach(g => print(g));
+    return;
+  }
+
+  if(lower.startsWith("play ")){
+    const game = lower.slice(5);
+
+    if(game === "cambrian revolt"){
+      print("loading cambrian revolt...");
+      setTimeout(() => {
+        window.location.href = "game.html";
+      }, 800);
+    } else {
+      print("file not found");
     }
+    return;
+  }
 
-    document.addEventListener("keydown", e => {
-      if(e.key.length === 1){
-        buffer += e.key;
-        input.textContent = buffer;
-      }
-
-      if(e.key === "Backspace"){
-        buffer = buffer.slice(0,-1);
-        input.textContent = buffer;
-      }
-
-      if(e.key === "Enter"){
-        handleCommand(buffer);
-        buffer = "";
-        input.textContent = "";
-      }
-    });
-
-    function handleCommand(raw){
-      const cmd = raw.trim();
-      const lower = cmd.toLowerCase();
-
-      print("guest@jenko:~$ " + cmd);
-
-      if(lower === "help"){
-        print("available commands:");
-        print(" help");
-        print(" help games");
-        print(" ls games");
-        print(" play <game>");
-        return;
-      }
-
-      if(lower === "help games"){
-        print("games subsystem online.");
-        print("some files may be missing or restricted.");
-        return;
-      }
-
-      if(lower === "ls games"){
-        games.forEach(g => print(g));
-        return;
-      }
-
-      if(lower.startsWith("play ")){
-        const game = lower.slice(5);
-
-        if(game === "cambrian revolt"){
-          print("loading cambrian revolt...");
-          setTimeout(() => {
-            window.location.href = "game.html";
-          }, 800);
-        } else {
-          print("file not found");
-        }
-        return;
-      }
-
-      print("command not recognized");
-    }
-  </script>
+  print("command not recognized");
+}
+</script>
 </body>
-</html>
