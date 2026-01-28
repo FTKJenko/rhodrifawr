@@ -51,7 +51,11 @@ html,body{
   border:1px solid var(--accent);
 }
 
-.screen{white-space:pre;max-height:68vh;overflow:auto;}
+.screen{
+  max-height:68vh;
+  overflow:auto;
+}
+
 .ascii-logo{white-space:pre;margin-bottom:12px;text-shadow:0 0 10px rgba(0,255,102,.06);}
 .subtitle{color:var(--muted);font-size:12px;margin-bottom:10px;}
 
@@ -68,9 +72,18 @@ html,body{
   color: #03fc88;
   font-weight: bold;
 }
+.ascii-logo{
+  white-space:pre;
+}
 
-.output{margin-top:8px;}
-.prompt-line{margin-top:12px;}
+.output{
+  white-space:pre-wrap;
+}
+
+.prompt-line{
+  white-space:pre;
+}
+
 .hint{color:#3adc99;opacity:.6;font-size:12px;margin-top:18px;}
 </style>
 </head>
