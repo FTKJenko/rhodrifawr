@@ -1,203 +1,214 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Chess — Two Player</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jenko — Chess</title>
 <style>
   body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    background: #222;
-    color: #eee;
-    font-family: monospace;
-    margin: 0;
-    min-height: 100vh;
-    padding: 20px;
+    margin:0;
+    background:#0a0a0a;
+    color:#00ff66;
+    font-family: "Source Code Pro", monospace;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
   }
-  h1 { margin-bottom: 20px; }
-  #board {
-    display: grid;
+
+  .board {
+    display:grid;
     grid-template-columns: repeat(8, 60px);
     grid-template-rows: repeat(8, 60px);
-    gap: 0;
-    margin-bottom: 20px;
+    gap:2px;
+    border:2px solid #03fc88;
+    margin-bottom:20px;
   }
+
   .cell {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 36px;
-    cursor: pointer;
-    user-select: none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:36px;
+    cursor:pointer;
+    user-select:none;
   }
-  .white { background-color: #eee; }
-  .black { background-color: #333; }
-  .white-piece { color: #fff; }
-  .black-piece { color: #000; }
-  .highlight { outline: 3px solid #0f0; }
-  #turn { margin-bottom: 20px; font-weight: bold; }
-  #returnBtn {
-    padding: 8px 16px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #0f0;
-    color: #000;
-    border: none;
-    border-radius: 6px;
+
+  .cell.white { background:#002200; } /* light side green */
+  .cell.black { background:#003300; } /* dark side green */
+  
+  .piece.white { color:#00ff66; } /* outline for white pieces */
+  .piece.black { color:#00ff66; } /* filled for black pieces */
+
+  .selected {
+    outline:2px solid #03fc88;
   }
-  #returnBtn:hover { background-color: #0c0; }
+
+  .button {
+    color:#0a0a0a;
+    background:#00ff66;
+    padding:8px 16px;
+    font-family:"Source Code Pro", monospace;
+    font-size:16px;
+    border:none;
+    cursor:pointer;
+    border-radius:4px;
+  }
 </style>
 </head>
 <body>
-<h1>Two-Player Chess</h1>
-<div id="turn">Turn: White</div>
-<div id="board"></div>
-<button id="returnBtn">Return to Main Site</button>
+
+<div class="board" id="board"></div>
+<button class="button" onclick="goBack()">Return to Main Site</button>
 
 <script>
-const boardEl = document.getElementById("board");
-const turnEl = document.getElementById("turn");
-const returnBtn = document.getElementById("returnBtn");
+const board = document.getElementById("board");
 
-returnBtn.addEventListener("click", () => {
-  window.location.href = "index.html"; // change this to your main terminal page
-});
-
-let board = [
-  ["r","n","b","q","k","b","n","r"],
-  ["p","p","p","p","p","p","p","p"],
+const initialBoard = [
+  ["bR","bN","bB","bQ","bK","bB","bN","bR"],
+  ["bP","bP","bP","bP","bP","bP","bP","bP"],
   ["","","","","","","",""],
   ["","","","","","","",""],
   ["","","","","","","",""],
   ["","","","","","","",""],
-  ["P","P","P","P","P","P","P","P"],
-  ["R","N","B","Q","K","B","N","R"]
+  ["wP","wP","wP","wP","wP","wP","wP","wP"],
+  ["wR","wN","wB","wQ","wK","wB","wN","wR"]
 ];
 
-const pieceSymbols = {
-  "r":"♜","n":"♞","b":"♝","q":"♛","k":"♚","p":"♟",
-  "R":"♖","N":"♘","B":"♗","Q":"♕","K":"♔","P":"♙"
+let cells = [];
+let selected = null;
+let turn = "w"; // white starts
+
+const symbols = {
+  "wK":"♔","wQ":"♕","wR":"♖","wB":"♗","wN":"♘","wP":"♙",
+  "bK":"♚","bQ":"♛","bR":"♜","bB":"♝","bN":"♞","bP":"♟"
 };
 
-let selected = null;
-let turn = "white";
+// Build board
+for(let r=0;r<8;r++){
+  for(let c=0;c<8;c++){
+    const cell = document.createElement("div");
+    cell.classList.add("cell");
+    cell.classList.add((r+c)%2===0?"white":"black");
+    cell.dataset.row = r;
+    cell.dataset.col = c;
+    board.appendChild(cell);
+    cells.push(cell);
 
-function renderBoard(){
-  boardEl.innerHTML = "";
-  for(let i=0;i<8;i++){
-    for(let j=0;j<8;j++){
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
-      cell.classList.add((i+j)%2===0 ? "white":"black");
-      cell.dataset.row = i;
-      cell.dataset.col = j;
-      const piece = board[i][j];
+    cell.addEventListener("click",()=>handleClick(r,c));
+  }
+}
+
+let boardState = JSON.parse(JSON.stringify(initialBoard));
+render();
+
+function render(){
+  for(let r=0;r<8;r++){
+    for(let c=0;c<8;c++){
+      const cell = cells[r*8+c];
+      cell.innerHTML = "";
+      const piece = boardState[r][c];
       if(piece){
-        cell.textContent = pieceSymbols[piece];
-        cell.classList.add(piece === piece.toUpperCase() ? "white-piece":"black-piece");
+        const el = document.createElement("span");
+        el.textContent = symbols[piece];
+        el.classList.add("piece");
+        el.classList.add(piece[0]==="w"?"white":"black");
+        cell.appendChild(el);
       }
-      cell.addEventListener("click", () => cellClick(i,j));
-      boardEl.appendChild(cell);
+      cell.classList.remove("selected");
     }
   }
-}
-
-function cellClick(row,col){
-  const piece = board[row][col];
   if(selected){
-    const [sRow,sCol] = selected;
-    const movingPiece = board[sRow][sCol];
-    if(isValidMove(movingPiece,sRow,sCol,row,col)){
-      // Check if king is captured
-      const target = board[row][col];
-      board[row][col] = movingPiece;
-      board[sRow][sCol] = "";
-      selected = null;
-      renderBoard();
-      if(target.toLowerCase() === 'k'){
-        alert((turn==="white"?"White":"Black")+" wins!");
-        resetGame();
-        return;
-      }
-      turn = turn==="white"?"black":"white";
-      turnEl.textContent = "Turn: " + (turn==="white"?"White":"Black");
-    } else {
-      selected = null;
-      renderBoard();
-    }
-  } else {
-    if(piece && ((turn==="white" && piece === piece.toUpperCase()) || (turn==="black" && piece === piece.toLowerCase()))){
-      selected = [row,col];
-      highlightCell(row,col);
-    }
+    cells[selected.row*8+selected.col].classList.add("selected");
   }
 }
 
-function highlightCell(row,col){
-  renderBoard();
-  const index = row*8 + col;
-  boardEl.children[index].classList.add("highlight");
+function handleClick(r,c){
+  const piece = boardState[r][c];
+  if(selected){
+    // Try to move
+    if(selected.row===r && selected.col===c){
+      selected = null;
+      render();
+      return;
+    }
+    if(validMove(selected.row,selected.col,r,c)){
+      const target = boardState[r][c];
+      boardState[r][c] = boardState[selected.row][selected.col];
+      boardState[selected.row][selected.col] = "";
+      if(target && target[1]==="K"){
+        alert(turn==="w"?"White wins!":"Black wins!");
+        boardState = JSON.parse(JSON.stringify(initialBoard));
+        turn = "w";
+      } else {
+        turn = turn==="w"?"b":"w";
+      }
+    }
+    selected = null;
+    render();
+  } else if(piece && piece[0]===turn){
+    selected = {row:r,col:c};
+    render();
+  }
 }
 
-function resetGame(){
-  board = [
-    ["r","n","b","q","k","b","n","r"],
-    ["p","p","p","p","p","p","p","p"],
-    ["","","","","","","",""],
-    ["","","","","","","",""],
-    ["","","","","","","",""],
-    ["","","","","","","",""],
-    ["P","P","P","P","P","P","P","P"],
-    ["R","N","B","Q","K","B","N","R"]
-  ];
-  turn = "white";
-  turnEl.textContent = "Turn: White";
-  selected = null;
-  renderBoard();
-}
+function validMove(sr,sc,er,ec){
+  const piece = boardState[sr][sc];
+  const target = boardState[er][ec];
+  const dr = er-sr;
+  const dc = ec-sc;
 
-// Valid moves for each piece (simplified, no castling, promotion, en passant)
-function isValidMove(piece,sRow,sCol,dRow,dCol){
-  const target = board[dRow][dCol];
-  const isWhite = piece === piece.toUpperCase();
-  const dir = isWhite ? -1 : 1;
-  const rowDiff = dRow - sRow;
-  const colDiff = dCol - sCol;
-  if(target && ((isWhite && target===target.toUpperCase()) || (!isWhite && target===target.toLowerCase()))) return false;
+  if(target && target[0]===piece[0]) return false; // can't capture own
 
-  switch(piece.toLowerCase()){
-    case 'p': // pawn
-      if(colDiff===0 && !target && ((rowDiff===dir) || (rowDiff===2*dir && ((isWhite && sRow===6)||( !isWhite && sRow===1)) && !board[sRow+dir][sCol]))) return true;
-      if(Math.abs(colDiff)===1 && rowDiff===dir && target) return true;
-      return false;
-    case 'r': if(rowDiff===0 || colDiff===0) return clearPath(sRow,sCol,dRow,dCol); return false;
-    case 'n': return (Math.abs(rowDiff)===2 && Math.abs(colDiff)===1)||(Math.abs(rowDiff)===1 && Math.abs(colDiff)===2);
-    case 'b': if(Math.abs(rowDiff)===Math.abs(colDiff)) return clearPath(sRow,sCol,dRow,dCol); return false;
-    case 'q': if(rowDiff===0 || colDiff===0 || Math.abs(rowDiff)===Math.abs(colDiff)) return clearPath(sRow,sCol,dRow,dCol); return false;
-    case 'k': return Math.abs(rowDiff)<=1 && Math.abs(colDiff)<=1;
+  switch(piece[1]){
+    case "P":
+      if(piece[0]==="w"){
+        if(dc===0 && dr===-1 && !target) return true;
+        if(dc===0 && dr===-2 && sr===6 && !target && !boardState[sr-1][sc]) return true;
+        if(Math.abs(dc)===1 && dr===-1 && target && target[0]==="b") return true;
+      } else {
+        if(dc===0 && dr===1 && !target) return true;
+        if(dc===0 && dr===2 && sr===1 && !target && !boardState[sr+1][sc]) return true;
+        if(Math.abs(dc)===1 && dr===1 && target && target[0]==="w") return true;
+      }
+      break;
+    case "R":
+      if(dr===0 || dc===0) return clearPath(sr,sc,er,ec);
+      break;
+    case "B":
+      if(Math.abs(dr)===Math.abs(dc)) return clearPath(sr,sc,er,ec);
+      break;
+    case "Q":
+      if(dr===0 || dc===0 || Math.abs(dr)===Math.abs(dc)) return clearPath(sr,sc,er,ec);
+      break;
+    case "N":
+      if((Math.abs(dr)===2 && Math.abs(dc)===1)||(Math.abs(dr)===1 && Math.abs(dc)===2)) return true;
+      break;
+    case "K":
+      if(Math.abs(dr)<=1 && Math.abs(dc)<=1) return true;
+      break;
   }
   return false;
 }
 
-function clearPath(sRow,sCol,dRow,dCol){
-  let stepRow = Math.sign(dRow-sRow);
-  let stepCol = Math.sign(dCol-sCol);
-  let r = sRow + stepRow;
-  let c = sCol + stepCol;
-  while(r !== dRow || c !== dCol){
-    if(board[r][c] !== "") return false;
-    r += stepRow;
-    c += stepCol;
+function clearPath(sr,sc,er,ec){
+  const dr = Math.sign(er-sr);
+  const dc = Math.sign(ec-sc);
+  let r = sr+dr;
+  let c = sc+dc;
+  while(r!==er || c!==ec){
+    if(boardState[r][c]) return false;
+    r+=dr;
+    c+=dc;
   }
   return true;
 }
 
-renderBoard();
+function goBack(){
+  window.location.href = "index.html";
+}
 </script>
+
 </body>
 </html>
