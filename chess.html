@@ -35,14 +35,18 @@
     user-select:none;
   }
 
-  .cell.white { background:#002200; } /* light side green */
-  .cell.black { background:#003300; } /* dark side green */
-  
-  .piece.white { color:#00ff66; } /* outline for white pieces */
-  .piece.black { color:#00ff66; } /* filled for black pieces */
+  .cell.white { background:#002200; }
+  .cell.black { background:#003300; }
+
+  .piece.white { color:#00ff66; } /* outline white pieces */
+  .piece.black { color:#00ff66; } /* filled black pieces */
 
   .selected {
     outline:2px solid #03fc88;
+  }
+
+  .highlight {
+    box-shadow: inset 0 0 0 3px #03fc88;
   }
 
   .button {
@@ -78,6 +82,7 @@ const initialBoard = [
 
 let cells = [];
 let selected = null;
+let validMoves = [];
 let turn = "w"; // white starts
 
 const symbols = {
@@ -109,6 +114,7 @@ function render(){
       const cell = cells[r*8+c];
       cell.innerHTML = "";
       const piece = boardState[r][c];
+      cell.classList.remove("selected","highlight");
       if(piece){
         const el = document.createElement("span");
         el.textContent = symbols[piece];
@@ -116,24 +122,22 @@ function render(){
         el.classList.add(piece[0]==="w"?"white":"black");
         cell.appendChild(el);
       }
-      cell.classList.remove("selected");
     }
   }
+
   if(selected){
     cells[selected.row*8+selected.col].classList.add("selected");
+    validMoves.forEach(m=>{
+      cells[m.row*8+m.col].classList.add("highlight");
+    });
   }
 }
 
 function handleClick(r,c){
   const piece = boardState[r][c];
   if(selected){
-    // Try to move
-    if(selected.row===r && selected.col===c){
-      selected = null;
-      render();
-      return;
-    }
-    if(validMove(selected.row,selected.col,r,c)){
+    // If click on valid move
+    if(validMoves.some(m=>m.row===r && m.col===c)){
       const target = boardState[r][c];
       boardState[r][c] = boardState[selected.row][selected.col];
       boardState[selected.row][selected.col] = "";
@@ -146,11 +150,25 @@ function handleClick(r,c){
       }
     }
     selected = null;
+    validMoves = [];
     render();
   } else if(piece && piece[0]===turn){
     selected = {row:r,col:c};
+    validMoves = getValidMoves(r,c);
     render();
   }
+}
+
+function getValidMoves(sr,sc){
+  const moves = [];
+  for(let r=0;r<8;r++){
+    for(let c=0;c<8;c++){
+      if(validMove(sr,sc,r,c)){
+        moves.push({row:r,col:c});
+      }
+    }
+  }
+  return moves;
 }
 
 function validMove(sr,sc,er,ec){
@@ -159,7 +177,7 @@ function validMove(sr,sc,er,ec){
   const dr = er-sr;
   const dc = ec-sc;
 
-  if(target && target[0]===piece[0]) return false; // can't capture own
+  if(target && target[0]===piece[0]) return false;
 
   switch(piece[1]){
     case "P":
