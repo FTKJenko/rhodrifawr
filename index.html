@@ -114,6 +114,21 @@ html,body{
   font-weight:bold;
 }
 
+#hidden-input {
+  position: fixed;
+  opacity: 0;
+  pointer-events: none;
+  height: 0;
+  width: 0;
+}
+
+.terminal-wrap {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+
 .output{margin-top:4px;}
 .prompt-line{margin-top:4px;}
 .hint{color:#3adc99;opacity:.6;font-size:12px;margin-top:18px;}
@@ -131,6 +146,16 @@ html,body{
 </head>
 
 <body>
+
+<input
+  id="hidden-input"
+  autocapitalize="off"
+  autocomplete="off"
+  autocorrect="off"
+  spellcheck="false"
+  inputmode="text"
+/>
+
 <div class="monitor">
 <div class="topbar">
   <div class="dot"></div>
@@ -159,6 +184,18 @@ html,body{
 
 <script>
 const ascii = document.getElementById("ascii-logo");
+
+const hiddenInput = document.getElementById("hidden-input");
+
+document.querySelector(".terminal-wrap").addEventListener("click", () => {
+  hiddenInput.focus();
+});
+
+function keepCursorInView() {
+  setTimeout(() => {
+    screen.scrollTop = screen.scrollHeight;
+  }, 50);
+}
 
 const fallbackArt = `
 J E N K O
@@ -227,6 +264,7 @@ function print(text){
   const line = document.createElement("div");
   line.textContent = text;
   output.appendChild(line);
+  keepCursorInView();
   screen.scrollTop = screen.scrollHeight;
 }
 	function clearOutput() {
@@ -234,23 +272,25 @@ function print(text){
 	}
 
 
-document.addEventListener("keydown", e => {
-  if(e.key.length === 1){
-    buffer += e.key;
+hiddenInput.addEventListener("input", e => {
+  buffer += e.target.value;
+  input.textContent = buffer;
+  e.target.value = "";
+});
+
+hiddenInput.addEventListener("keydown", e => {
+  if (e.key === "Backspace") {
+    buffer = buffer.slice(0, -1);
     input.textContent = buffer;
   }
 
-  if(e.key === "Backspace"){
-    buffer = buffer.slice(0,-1);
-    input.textContent = buffer;
-  }
-
-  if(e.key === "Enter"){
+  if (e.key === "Enter") {
     handleCommand(buffer);
     buffer = "";
     input.textContent = "";
   }
 });
+
 
 function printCommand(cmd){
   const line = document.createElement("div");
