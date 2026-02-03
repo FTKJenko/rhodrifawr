@@ -242,12 +242,20 @@ document.addEventListener("keydown", e => {
   }
 });
 
+function printCommand(cmd){
+  const line = document.createElement("div");
+  line.innerHTML = `<span class="prompt">guest@jenko:~$</span> ${cmd}`;
+  output.appendChild(line);
+  screen.scrollTop = screen.scrollHeight;
+}
+
+
 function handleCommand(raw){
   clearOutput();
   const cmd = raw.trim();
   const lower = cmd.toLowerCase();
 
-  print("guest@jenko:~$ " + cmd);
+  printCommand(cmd);
 
   if(lower === "help"){
     print("available commands:");
@@ -270,15 +278,15 @@ function handleCommand(raw){
   }
   
   if(lower === "ls") {
-		print("games");
-		print("readme.txt");
-		return;
-	}
+    print("games");
+    print("readme.txt");
+    return;
+  }
   
   if(lower === "cat readme.txt") {
-	 print("");
-	 return;
-	 }
+    print("");
+    return;
+  }
 
   if(lower.startsWith("play ")){
     const game = lower.slice(5);
@@ -288,6 +296,17 @@ function handleCommand(raw){
       setTimeout(() => {
         window.location.href = "game.html";
       }, 800);
+    } else if(game === "global thermonuclear war") {
+		const line = document.createElement("div");
+		line.innerHTML = `<em>nice try ;)</em>`;
+		output.appendChild(line);
+		screen.scrollTop = screen.scrollHeight;
+		return;
+	} else if(game === "chess") {
+		print("loading chess...");
+      setTimeout(() => {
+        window.location.href = "chess.html";
+      }, 800);
     } else {
       print("file not found");
     }
@@ -295,7 +314,8 @@ function handleCommand(raw){
   }
 
   print("command not recognized");
-}
+} 
+
 </script>
 </body>
 </html>
