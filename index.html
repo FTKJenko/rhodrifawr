@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -218,6 +219,10 @@ function print(text){
   output.appendChild(line);
   screen.scrollTop = screen.scrollHeight;
 }
+	function clearOutput() {
+	  output.innerHTML = "";
+	}
+
 
 document.addEventListener("keydown", e => {
   if(e.key.length === 1){
@@ -238,6 +243,7 @@ document.addEventListener("keydown", e => {
 });
 
 function handleCommand(raw){
+  clearOutput();
   const cmd = raw.trim();
   const lower = cmd.toLowerCase();
 
@@ -262,6 +268,17 @@ function handleCommand(raw){
     games.forEach(g => print(g));
     return;
   }
+  
+  if(lower === "ls") {
+		print("games");
+		print("readme.txt");
+		return;
+	}
+  
+  if(lower === "cat readme.txt") {
+	 print("");
+	 return;
+	 }
 
   if(lower.startsWith("play ")){
     const game = lower.slice(5);
