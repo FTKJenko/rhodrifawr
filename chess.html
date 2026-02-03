@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chess — Two Player</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: #222;
+    color: #eee;
+    font-family: monospace;
+    margin: 0;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 { margin-bottom: 20px; }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(8, 60px);
+    grid-template-rows: repeat(8, 60px);
+    gap: 0;
+    margin-bottom: 20px;
+  }
+  .cell {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .white { background-color: #eee; }
+  .black { background-color: #333; }
+  .white-piece { color: #fff; }
+  .black-piece { color: #000; }
+  .highlight { outline: 3px solid #0f0; }
+  #turn { margin-bottom: 20px; font-weight: bold; }
+  #returnBtn {
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #0f0;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+  }
+  #returnBtn:hover { background-color: #0c0; }
+</style>
+</head>
+<body>
+<h1>Two-Player Chess</h1>
+<div id="turn">Turn: White</div>
+<div id="board"></div>
+<button id="returnBtn">Return to Main Site</button>
+
+<script>
+const boardEl = document.getElementById("board");
+const turnEl = document.getElementById("turn");
+const returnBtn = document.getElementById("returnBtn");
+
+returnBtn.addEventListener("click", () => {
+  window.location.href = "index.html"; // change this to your main terminal page
+});
+
+let board = [
+  ["r","n","b","q","k","b","n","r"],
+  ["p","p","p","p","p","p","p","p"],
+  ["","","","","","","",""],
+  ["","","","","","","",""],
+  ["","","","","","","",""],
+  ["","","","","","","",""],
+  ["P","P","P","P","P","P","P","P"],
+  ["R","N","B","Q","K","B","N","R"]
+];
+
+const pieceSymbols = {
+  "r":"♜","n":"♞","b":"♝","q":"♛","k":"♚","p":"♟",
+  "R":"♖","N":"♘","B":"♗","Q":"♕","K":"♔","P":"♙"
+};
+
+let selected = null;
+let turn = "white";
+
+function renderBoard(){
+  boardEl.innerHTML = "";
+  for(let i=0;i<8;i++){
+    for(let j=0;j<8;j++){
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.classList.add((i+j)%2===0 ? "white":"black");
+      cell.dataset.row = i;
+      cell.dataset.col = j;
+      const piece = board[i][j];
+      if(piece){
+        cell.textContent = pieceSymbols[piece];
+        cell.classList.add(piece === piece.toUpperCase() ? "white-piece":"black-piece");
+      }
+      cell.addEventListener("click", () => cellClick(i,j));
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function cellClick(row,col){
+  const piece = board[row][col];
+  if(selected){
+    const [sRow,sCol] = selected;
+    const movingPiece = board[sRow][sCol];
+    if(isValidMove(movingPiece,sRow,sCol,row,col)){
+      // Check if king is captured
+      const target = board[row][col];
+      board[row][col] = movingPiece;
+      board[sRow][sCol] = "";
+      selected = null;
+      renderBoard();
+      if(target.toLowerCase() === 'k'){
+        alert((turn==="white"?"White":"Black")+" wins!");
+        resetGame();
+        return;
+      }
+      turn = turn==="white"?"black":"white";
+      turnEl.textContent = "Turn: " + (turn==="white"?"White":"Black");
+    } else {
+      selected = null;
+      renderBoard();
+    }
+  } else {
+    if(piece && ((turn==="white" && piece === piece.toUpperCase()) || (turn==="black" && piece === piece.toLowerCase()))){
+      selected = [row,col];
+      highlightCell(row,col);
+    }
+  }
+}
+
+function highlightCell(row,col){
+  renderBoard();
+  const index = row*8 + col;
+  boardEl.children[index].classList.add("highlight");
+}
+
+function resetGame(){
+  board = [
+    ["r","n","b","q","k","b","n","r"],
+    ["p","p","p","p","p","p","p","p"],
+    ["","","","","","","",""],
+    ["","","","","","","",""],
+    ["","","","","","","",""],
+    ["","","","","","","",""],
+    ["P","P","P","P","P","P","P","P"],
+    ["R","N","B","Q","K","B","N","R"]
+  ];
+  turn = "white";
+  turnEl.textContent = "Turn: White";
+  selected = null;
+  renderBoard();
+}
+
+// Valid moves for each piece (simplified, no castling, promotion, en passant)
+function isValidMove(piece,sRow,sCol,dRow,dCol){
+  const target = board[dRow][dCol];
+  const isWhite = piece === piece.toUpperCase();
+  const dir = isWhite ? -1 : 1;
+  const rowDiff = dRow - sRow;
+  const colDiff = dCol - sCol;
+  if(target && ((isWhite && target===target.toUpperCase()) || (!isWhite && target===target.toLowerCase()))) return false;
+
+  switch(piece.toLowerCase()){
+    case 'p': // pawn
+      if(colDiff===0 && !target && ((rowDiff===dir) || (rowDiff===2*dir && ((isWhite && sRow===6)||( !isWhite && sRow===1)) && !board[sRow+dir][sCol]))) return true;
+      if(Math.abs(colDiff)===1 && rowDiff===dir && target) return true;
+      return false;
+    case 'r': if(rowDiff===0 || colDiff===0) return clearPath(sRow,sCol,dRow,dCol); return false;
+    case 'n': return (Math.abs(rowDiff)===2 && Math.abs(colDiff)===1)||(Math.abs(rowDiff)===1 && Math.abs(colDiff)===2);
+    case 'b': if(Math.abs(rowDiff)===Math.abs(colDiff)) return clearPath(sRow,sCol,dRow,dCol); return false;
+    case 'q': if(rowDiff===0 || colDiff===0 || Math.abs(rowDiff)===Math.abs(colDiff)) return clearPath(sRow,sCol,dRow,dCol); return false;
+    case 'k': return Math.abs(rowDiff)<=1 && Math.abs(colDiff)<=1;
+  }
+  return false;
+}
+
+function clearPath(sRow,sCol,dRow,dCol){
+  let stepRow = Math.sign(dRow-sRow);
+  let stepCol = Math.sign(dCol-sCol);
+  let r = sRow + stepRow;
+  let c = sCol + stepCol;
+  while(r !== dRow || c !== dCol){
+    if(board[r][c] !== "") return false;
+    r += stepRow;
+    c += stepCol;
+  }
+  return true;
+}
+
+renderBoard();
+</script>
+</body>
+</html>
