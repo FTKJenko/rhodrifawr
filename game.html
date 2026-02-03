@@ -1,70 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Owain Glyndwr</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      background: #111;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: "Source Code Pro", monospace;
-      color: #5aff5a;
-    }
-
-    .game-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    canvas {
-      border: 3px solid #5aff5a;
-      image-rendering: pixelated;
-    }
-
-    .return-btn {
-      padding: 8px 16px;
-      border: 1px solid #5aff5a;
-      color: #5aff5a;
-      text-decoration: none;
-      font-size: 13px;
-      letter-spacing: 1px;
-      background: rgba(90,255,90,0.05);
-      transition: all 0.2s ease;
-    }
-
-    .return-btn:hover {
-      background: rgba(90,255,90,0.15);
-      box-shadow: 0 0 10px rgba(90,255,90,0.35);
-      transform: translateY(-1px);
-    }
-
-    .return-btn::before {
-      content: "< ";
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>The Battle for Bryn Glas</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body { background:#111; color:#5aff5a; font-family:"Source Code Pro", monospace; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; margin:0; height:100vh; }
+  h1 { margin:16px; font-size:20px; }
+  canvas { border:3px solid #5aff5a; image-rendering: pixelated; }
+  .btn { margin-top:12px; padding:6px 12px; border:1px solid #5aff5a; color:#5aff5a; text-decoration:none; background:rgba(90,255,90,0.05); transition:0.2s; }
+  .btn:hover { background:rgba(90,255,90,0.15); box-shadow:0 0 10px rgba(90,255,90,0.35); transform:translateY(-1px); }
+  .btn::before { content:"< "; }
+</style>
 </head>
 <body>
-
-<div class="game-wrap">
-  <canvas id="game" width="320" height="320"></canvas>
-
-  <a href="index.html" class="return-btn">exit_simulation</a>
+<h1>The Battle for Bryn Glas - 1402</h1>
+<canvas id="game" width="320" height="320"></canvas>
+<div style="display:flex; gap:10px; margin-top:12px;">
+  <a href="index.html" class="btn">exit_simulation</a>
+  <button class="btn" onclick="resetGame()">reset_simulation</button>
 </div>
+
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-
 const TILE = 32;
+
+let rafId = null;
+let gameRunning = true;
 
 const map = [
   [1,1,1,1,1,1,1,1,1,1],
@@ -74,76 +38,194 @@ const map = [
   [1,0,1,1,1,1,0,1,0,1],
   [1,0,0,0,0,0,0,0,0,1],
   [1,0,1,1,1,1,1,1,0,1],
-  [1,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,1,1],
   [1,0,0,1,1,1,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,1],
 ];
 
-const player = {
-  x: TILE * 1 + 4,
-  y: TILE * 1 + 4,
-  size: 24,
-  speed: 2
-};
+const player = { x:TILE+4, y:TILE+4, size:24, speed:1.5 };
+const gold = { x: TILE*8, y: TILE*8, size:28 };
+
+
+const CHASE_DIST = TILE*3;
+const PATROL_SPEED = 0.5;
+const CHASE_SPEED = 1;
+
+const enemies = [
+  { x:TILE*3+4, y:TILE*7+4, size:24, patrolAxis:"x", patrolDir:"right", chasing:false },
+  { x:TILE*7+4, y:TILE*5+4, size:24, patrolAxis:"x", patrolDir:"left", chasing:false },
+  { x:TILE*8+4, y:TILE*2+4, size:24, patrolAxis:"y", patrolDir:"down", chasing:false }
+];
 
 const keys = {};
 window.addEventListener("keydown", e => keys[e.key] = true);
 window.addEventListener("keyup", e => keys[e.key] = false);
 
-function isColliding(x, y) {
-  const left   = Math.floor(x / TILE);
-  const right  = Math.floor((x + player.size - 1) / TILE);
-  const top    = Math.floor(y / TILE);
-  const bottom = Math.floor((y + player.size - 1) / TILE);
+function resetKeys() { for (let k in keys) keys[k]=false; }
 
-  return (
-    map[top]?.[left] === 1 ||
-    map[top]?.[right] === 1 ||
-    map[bottom]?.[left] === 1 ||
-    map[bottom]?.[right] === 1
-  );
+function isColliding(x, y, size=player.size) {
+  const left = Math.floor(x/TILE), right = Math.floor((x+size-1)/TILE);
+  const top = Math.floor(y/TILE), bottom = Math.floor((y+size-1)/TILE);
+  return map[top]?.[left]===1 || map[top]?.[right]===1 || map[bottom]?.[left]===1 || map[bottom]?.[right]===1;
 }
 
 function movePlayer(dx, dy) {
-  if (!isColliding(player.x + dx, player.y)) {
-    player.x += dx;
-  }
-  if (!isColliding(player.x, player.y + dy)) {
-    player.y += dy;
-  }
+  if (!isColliding(player.x + dx, player.y)) player.x += dx;
+  if (!isColliding(player.x, player.y + dy)) player.y += dy;
 }
 
-function update() {
+function updatePlayer() {
   if (keys["ArrowUp"] || keys["w"]) movePlayer(0, -player.speed);
   if (keys["ArrowDown"] || keys["s"]) movePlayer(0, player.speed);
   if (keys["ArrowLeft"] || keys["a"]) movePlayer(-player.speed, 0);
   if (keys["ArrowRight"] || keys["d"]) movePlayer(player.speed, 0);
 }
 
-function drawMap() {
-  for (let y = 0; y < map.length; y++) {
-    for (let x = 0; x < map[y].length; x++) {
-      ctx.fillStyle = map[y][x] === 1 ? "#2f6b2f" : "#6bc96b";
-      ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+
+function moveEnemy(enemy, dx, dy) {
+  if (!isColliding(enemy.x+dx, enemy.y, enemy.size)) enemy.x += dx;
+  if (!isColliding(enemy.x, enemy.y+dy, enemy.size)) enemy.y += dy;
+}
+
+function updateEnemies() {
+  for (let e of enemies) {
+    const dx = player.x - e.x;
+    const dy = player.y - e.y;
+    const dist = Math.hypot(dx, dy);
+
+
+    if (dist <= CHASE_DIST) e.chasing = true;
+    else if (dist > CHASE_DIST*1.5) e.chasing = false;
+
+    if (e.chasing) {
+      const mag = Math.hypot(dx, dy);
+      const moveX = (dx/mag)*CHASE_SPEED;
+      const moveY = (dy/mag)*CHASE_SPEED;
+      moveEnemy(e, moveX, moveY);
+    } else {
+
+      let moveX = 0, moveY = 0;
+      if (e.patrolAxis==="x") moveX = (e.patrolDir==="right"?PATROL_SPEED:-PATROL_SPEED);
+      else moveY = (e.patrolDir==="down"?PATROL_SPEED:-PATROL_SPEED);
+
+      if (isColliding(e.x+moveX, e.y+moveY, e.size)) {
+        if (e.patrolAxis==="x") e.patrolDir = e.patrolDir==="right"?"left":"right";
+        else e.patrolDir = e.patrolDir==="down"?"up":"down";
+      }
+      moveEnemy(e, moveX, moveY);
     }
   }
 }
 
+
+function drawMap() {
+  for (let y=0; y<map.length; y++)
+    for (let x=0; x<map[y].length; x++) {
+      ctx.fillStyle = map[y][x]===1 ? "#2f6b2f" : "#6bc96b";
+      ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
+    }
+}
+
 function drawPlayer() {
-  ctx.fillStyle = "#1e90ff";
+  ctx.fillStyle="#1e90ff";
   ctx.fillRect(player.x, player.y, player.size, player.size);
 }
 
-function gameLoop() {
-  update();
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawMap();
-  drawPlayer();
-  requestAnimationFrame(gameLoop);
+function drawEnemies() {
+  for (let e of enemies) {
+    ctx.fillStyle="#ff4c4c";
+    ctx.fillRect(e.x, e.y, e.size, e.size);
+  }
 }
 
-gameLoop();
-</script>
+function drawGold() {
+  ctx.fillStyle="gold";
+  ctx.fillRect(gold.x, gold.y, gold.size, gold.size);
+}
 
+
+function checkWinLoss() {
+  const px = player.x + player.size/2, py = player.y + player.size/2;
+  if (px>gold.x && px<gold.x+gold.size && py>gold.y && py<gold.y+gold.size) return "win";
+  for (let e of enemies) {
+    const ex = e.x + e.size/2, ey = e.y + e.size/2;
+    if (Math.abs(px-ex)<(player.size+e.size)/2 && Math.abs(py-ey)<(player.size+e.size)/2) return "loss";
+  }
+  return null;
+}
+
+
+function gameLoop() {
+  if (!gameRunning) return;
+
+  updatePlayer();
+  updateEnemies();
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawMap();
+  drawGold();
+  drawPlayer();
+  drawEnemies();
+
+  const state = checkWinLoss();
+  if (state) {
+    gameRunning = false;
+    resetKeys();
+
+    const msg = state === "win"
+      ? "You beat the English!"
+      : "You were caught by the English!";
+
+    setTimeout(() => {
+      if (confirm(msg + " Reset game?")) resetGame();
+    }, 50);
+
+    return;
+  }
+
+  rafId = requestAnimationFrame(gameLoop);
+}
+
+
+function resetGame() {
+  gameRunning = false;
+
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
+  player.x = TILE + 4;
+  player.y = TILE + 4;
+
+  enemies[0].x = TILE*3 + 4;
+  enemies[0].y = TILE*7 + 4;
+  enemies[0].dirX = 1;
+  enemies[0].dirY = 0;
+  enemies[0].chasing = false;
+
+  enemies[1].x = TILE*7 + 4;
+  enemies[1].y = TILE*5 + 4;
+  enemies[1].dirX = -1;
+  enemies[1].dirY = 0;
+  enemies[1].chasing = false;
+
+
+  enemies[2].x = TILE*8 + 4;
+  enemies[2].y = TILE*2 + 4;
+  enemies[2].dirX = 0;
+  enemies[2].dirY = 1;
+  enemies[2].chasing = false;
+
+  resetKeys();
+
+  gameRunning = true;
+  rafId = requestAnimationFrame(gameLoop);
+}
+
+
+rafId = requestAnimationFrame(gameLoop);
+
+</script>
 </body>
 </html>
